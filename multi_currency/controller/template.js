@@ -1,5 +1,8 @@
-class MultiCurrencyApp { //Core operations
-
+class TokenSaleController { //Core operations
+	
+	constructor() {
+		this.counter = 0;
+	}
 
 	generateWallet(id, currency) {
 		/*Create wallet address in `currency` for `id`,
@@ -12,6 +15,9 @@ class MultiCurrencyApp { //Core operations
 		//Encrypt(hash(masterkey, salt+pepper, userID+pass), privatek)
 		//Masterkey & pepper should be input manually at server start
 		//User need to re-enter pass/go through email confirmation
+		var success = true;
+		var addr = '0x';
+		var err = null;
 		return {success: success, address: addr, error: err};
 	}
 
@@ -19,7 +25,15 @@ class MultiCurrencyApp { //Core operations
 		/*Check `id`s balance of `currency`*/
 		//Check if id & wallet exists
 		//Query balance from api
-		return {success: success, balance: balance, unit: unit, error: err};
+		var success = true;
+		var balance = 0;
+		var unit = "satoshi"
+		var err = null;
+		return {success: success, balance: this.counter, unit: unit, error: err};
+	}
+
+	increment() {
+		this.counter++;
 	}
 
 	buyToken(id, amount, toWallet, currency) {
@@ -36,6 +50,9 @@ class MultiCurrencyApp { //Core operations
 		//If times out, update database and use manual resolution
 		//If token issue failed, send back currency
 		//TODO: gas problem
+		var success = true;
+		var amount = 0;
+		var err = null;
 		return {success: success, amount: amount, error: err};
 	}
 
@@ -46,7 +63,14 @@ class MultiCurrencyApp { //Core operations
 		//Get id's wallet and transfer the currency out
 		//TODO: think about race condition (probly not)
 		//TODO: gas problem
+		var success = true;
+		var amount = 0;
+		var err = null;
 		return {success: success, amount: amount, error: err};
 	}
 
 }
+
+var controller = new TokenSaleController();
+
+module.exports = controller;
