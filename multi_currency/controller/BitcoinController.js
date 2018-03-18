@@ -131,6 +131,24 @@ class BitcoinController {
 		var txid;
 		var err = null;
 		try {
+			var gasFee = 0.000001;
+			var balance = client.getBalance(fromID, 6);
+			var numAddr = client.getAddressesByAccount(fromID);
+			if ((await balance) < amount) {
+				err = 'Insufficient funds';
+				return {success: false, txid: '', error: err};
+			}
+			numAddr = (await numAddr).length;
+			//console.log("numAddr: ", numAddr);
+
+			var gas = this.safeGasEstimate(gasFee, amount, numAddr);
+			amount -= gas;
+			console.log("Amount after fee: ", amount);
+			if (amount <= 0) {
+				err = 'Insufficient funds for transaction fee';
+				return {success: false, txid: '', error: err};
+			}
+
 			txid = await client.sendFrom(fromID, to, amount, 6);
 		} catch (e) {
 			success = false;
@@ -140,6 +158,44 @@ class BitcoinController {
 
 		return {success: success, txid: txid, error: err};
 	}
+
+	async safeSendToAccount(fromID, to, amount, gas, unit) {
+		//Send currency		
+		//TODO: consider unit & gas
+		var success = true;
+		var txid;
+		var err = null;
+		try {
+			var gasFee = 0.000001;
+			var balance = client.getBalance(fromID, 6);
+			var numAddr = client.getAddressesByAccount(fromID);
+			if ((await balance) < amount) {
+				err = 'Insufficient funds';
+				return {success: false, txid: '', error: err};
+			}
+			var toAddress = client.getAccountAddress(to); // Wait until balance returns
+			//to avoid overwhelming the rpc server
+			numAddr = (await numAddr).length;
+			//console.log("numAddr: ", numAddr);
+
+			var gas = this.safeGasEstimate(gasFee, amount, numAddr);
+			amount -= gas;
+			console.log("Amount after fee: ", amount);
+			if (amount <= 0) {
+				err = 'Insufficient funds for transaction fee';
+				return {success: false, txid: '', error: err};
+			}
+			
+			txid = await client.sendFrom(fromID, (await toAddress), amount, 6);
+		} catch (e) {
+			success = false;
+			txid = '';
+			err = e;
+		}
+
+		return {success: success, txid: txid, error: err};
+	}
+
 
 	async move(from, to, amount, unit) {
 		var success;
@@ -152,13 +208,15 @@ class BitcoinController {
 		return true;
 	}
 
-	gasEstimate(gasFee, amount, numAddr) {
+	safeGasEstimate(gasFee, amount, numAddr) {
 		//Safe maximum gas fee estimate
 		if (numAddr < 1) numAddr = 1;
 		var nout = 2;
 		var nin = 1;
 		//Maximum transaction fee ~ 1%: as it'll rarely happen, cost negligible
-		if (amount > 0.07 && amount <= 0.3) { //500-2000 usd
+		if (amount <= 0.07) { //<=500 usd
+			nin = Math.min(numAddr, 2);
+		} else if (amount > 0.07 && amount <= 0.3) { //500-2000 usd
 			nin = Math.min(numAddr, 5);
 		} else if (amount > 0.3 && amount <= 0.7) { //2000-5000 usd
 			nin = Math.min(numAddr, 10);
@@ -169,8 +227,9 @@ class BitcoinController {
 		} else { //>100000
 			nin = Math.min(numAddr, 125);
 		}
+		//console.log("nin: ", nin);
 
-		return gasFee*(nin*181 + nout*34 + 10); //Fee-per-byte*size
+		return Math.min(gasFee*(nin*181 + nout*34 + 10)); //Fee-per-byte*size
 	}
 }
 

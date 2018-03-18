@@ -26,12 +26,16 @@ router.get('/test', async function(req, res, next) {
 	result = await Promise.props(result);
 	console.log(result);
 
-	console.log("Send to account");
+	console.log("Safe send");
 	for (var i=0; i<10; i++) {
 		var uname = 'user'+i.toString();
-		resultSend[uname] = controller.sendToAccount('', uname, 0.5, 0, 'btc');
+		resultSend[uname] = controller.safeSendToAccount('user0', uname, 1.5, 
+			0, 'btc');
 	}
-	//resultSend.failure = controller.send('', result.user0.address , 10000, 0, 'btc');
+	/*result.user1 = controller.safeSend('', result.user1.address, 0.5, 
+			0, 'btc');*/
+	resultSend.failure = controller.safeSendToAccount('test3', 'test', 1, 
+		0, 'btc');
 	resultSend = await Promise.props(resultSend);
 	console.log(resultSend);
 
