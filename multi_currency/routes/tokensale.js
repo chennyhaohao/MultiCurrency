@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var controller = require('../controller/BitcoinController.js');
+var Middlewares = require('./middlewares.js');
 var Promise = require('bluebird');
 
 
@@ -59,6 +60,23 @@ router.get('/generate-wallet/btc', async function(req, res, next) {
 
   	res.json(result);
 });
+
+router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
+	async function(req, res, next) {
+		var userid = req.params.userid;
+		return res.json(await controller.balanceOf(userid));
+	}
+);
+
+router.post('/contribute/btc/', 
+	Middlewares.checkAuthMiddleware,
+	async function(req, res, next) {
+		var userid = req.body.userid;
+		var amount = req.body.amount;
+		return res.json(await controller.safeSendToAccount(userid, "multisig", amount,
+			0, "btc"));
+	}
+);
 
 module.exports = router;
 
