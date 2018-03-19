@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var controller = require('../controller/BitcoinController.js');
+var btcController = require('../controller/BitcoinController.js');
+var controller = require('../controller/MasterController.js');
 var Middlewares = require('./middlewares.js');
 var Promise = require('bluebird');
 
@@ -52,19 +53,20 @@ router.get('/test', async function(req, res, next) {
   	res.json(resultSend);
 });
 
-router.get('/generate-wallet/btc', async function(req, res, next) {
-	var result = controller.generateWallet();
-	console.log(result);
-	//var result = await controller.checkBalance('1', 'btc');
-	//console.log(result);
+router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
+	 async function(req, res, next) {
+		var userid = req.params.userid;
+		var result = await controller.generateWallet(userid, 'btc');
+		//console.log(result);
 
-  	res.json(result);
-});
+	  	res.json(result);
+	}
+);
 
 router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
 	async function(req, res, next) {
 		var userid = req.params.userid;
-		return res.json(await controller.balanceOf(userid));
+		return res.json(await controller.balanceOf(userid, 'btc'));
 	}
 );
 
@@ -73,8 +75,11 @@ router.post('/contribute/btc/',
 	async function(req, res, next) {
 		var userid = req.body.userid;
 		var amount = req.body.amount;
-		return res.json(await controller.safeSendToAccount(userid, "multisig", amount,
-			0, "btc"));
+		console.log(userid);
+		var result = await controller.buyToken(userid, parseFloat(amount),
+			'0x', "btc");
+		console.log(result);
+		return res.json(result);
 	}
 );
 

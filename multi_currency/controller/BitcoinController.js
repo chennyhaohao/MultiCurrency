@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 
 var client = new btcClient({network: 'regtest', 'username': 'chen', 
 	"password": "123", port: '18332'});
-
+/*
 client.getBalance('', 1).then(res => console.log(res));
 
 client.getBalance('test', 1).then(res => console.log(res));
@@ -13,7 +13,7 @@ client.getBalance('test', 1).then(res => console.log(res));
 client.getAccountAddress('test').then(res => console.log(res));
 
 client.move('', 'test', 1).then(res=>console.log(res));
-
+*/
 bitcore.Networks.enableRegtest();
 
 var network = bitcore.Networks.testnet; //Change to livenet in production
@@ -29,17 +29,13 @@ class BitcoinController {
 	}
 
 	async generateAddress(id) {
-		var success = true;
-		var err = null;
-		var addr;
+		
 		try {
-			addr = await client.getAccountAddress(id);
+			return (await client.getAccountAddress(id));
 		} catch (e) {
-			success = false;
-			addr = '';
-			err = e;
+			throw new Error(e);
 		}
-		return {success: success, error: err, address: addr};
+		
 		/*
 		var privateKey = new bitcore.PrivateKey();
 		var address = privateKey.toAddress(network);
@@ -56,19 +52,12 @@ class BitcoinController {
 		*/
 	}
 
-	async balanceOf(id) {
-		var success = true;
-		var err = null;
-		var balance;
+	async balanceOf(id) {	
 		try {
-			balance = await client.getBalance(id, 6);
+			return await client.getBalance(id, 6);
 		} catch(e) {
-			success = false;
-			balance = 0;
-			err = e;
+			throw new Error(e);
 		}
-
-		return {success: success, balance: balance, unit: 'btc', error: err};
 	}
 
 	async unconfirmedBalance(id) {
@@ -129,16 +118,14 @@ class BitcoinController {
 	async safeSend(fromID, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
-		var success = true;
-		var txid;
-		var err = null;
+		var err;
 		try {
 			var gasFee = 0.000001;
 			var balance = client.getBalance(fromID, 6);
 			var numAddr = client.getAddressesByAccount(fromID);
 			if ((await balance) < amount) {
 				err = 'Insufficient funds';
-				return {success: false, txid: '', error: err};
+				throw new Error(err);
 			}
 			numAddr = (await numAddr).length;
 			//console.log("numAddr: ", numAddr);
@@ -149,32 +136,25 @@ class BitcoinController {
 			console.log("Amount after fee: ", amount);
 			if (amount <= 0) {
 				err = 'Insufficient funds for transaction fee';
-				return {success: false, txid: '', error: err};
+				throw new Error(err);
 			}
 
-			txid = await client.sendFrom(fromID, to, amount, 6);
+			return await client.sendFrom(fromID, to, amount, 6);
 		} catch (e) {
-			success = false;
-			txid = '';
-			err = e;
+			throw new Error(e);
 		}
-
-		return {success: success, txid: txid, error: err};
 	}
 
 	async safeSendToAccount(fromID, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
-		var success = true;
-		var txid;
-		var err = null;
 		try {
 			var gasFee = 0.000001;
 			var balance = client.getBalance(fromID, 6);
 			var numAddr = client.getAddressesByAccount(fromID);
 			if ((await balance) < amount) {
-				err = 'Insufficient funds';
-				return {success: false, txid: '', error: err};
+				var err = 'Insufficient funds';
+				throw new Error(err);
 			}
 			var toAddress = client.getAccountAddress(to); // Wait until balance returns
 			//to avoid overwhelming the rpc server
@@ -188,18 +168,15 @@ class BitcoinController {
 			console.log("Amount after fee: ", amount);
 
 			if (amount <= 0) {
-				err = 'Insufficient funds for transaction fee';
-				return {success: false, txid: '', error: err};
+				var err = 'Insufficient funds for transaction fee';
+				throw new Error(err);
 			}
 			
-			txid = await client.sendFrom(fromID, (await toAddress), amount, 6);
+			return await client.sendFrom(fromID, (await toAddress), amount, 6);
 		} catch (e) {
-			success = false;
-			txid = '';
-			err = e;
+			throw new Error(e);
 		}
 
-		return {success: success, txid: txid, error: err};
 	}
 
 

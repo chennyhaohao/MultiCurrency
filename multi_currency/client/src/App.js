@@ -7,7 +7,8 @@ class App extends Component {
             wallet: '',
             userid: '',
             balance: 0,
-            amount: 0
+            amount: 0,
+            address: ''
           };
 
   constructor(props) {
@@ -41,11 +42,11 @@ class App extends Component {
   }
 
   generateWallet() {
-      fetch('/tokensale/generate-wallet/btc')
+      fetch('/tokensale/generate-wallet/btc/' + this.state.userid)
         .then(res => res.json())
         .then(res => {
             console.log(res);
-            this.setState({wallet: res.wallet});
+            if (!res.error) this.setState({address: res.address});
         });
   }
 
@@ -69,7 +70,14 @@ class App extends Component {
                     'Accept': 'application/json'},
           body: JSON.stringify(this.state) //Important! Stringify the payload!
       }).then(res => res.json())
-      .then(res => console.log(res));
+      .then(res => {
+        console.log(res);
+        if (res.error) {
+          console.log(res.error);
+        } else {
+          this.userBalance();
+        }
+      });
   }
 
   render() {
@@ -84,6 +92,7 @@ class App extends Component {
           <p>Wallet: {this.state.wallet}</p>
           <button onClick={this.test}>test</button> <br />
           <button onClick={this.generateWallet}>generate btc wallet</button><br />
+          Send to this address: <span>{this.state.address}</span>
           <form onSubmit={this.submitHander}>
             User ID: <input 
               type='text'
