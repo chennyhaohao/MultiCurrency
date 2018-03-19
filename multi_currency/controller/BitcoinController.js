@@ -62,57 +62,39 @@ class BitcoinController {
 
 	async unconfirmedBalance(id) {
 		//Return the amount of balance that has not received 6 confirmations
-		var success = true;
-		var err = null;
-		var balance;
 		try {
 			var confirmed = client.getBalance(id, 6);
-			var unconfirmed = client.getBalance(id, 0);
-			balance = (await unconfirmed) - (await confirmed);
+			var unconfirmed = client.getBalance(id, 1);
+			return (await unconfirmed) - (await confirmed);
 		} catch(e) {
-			success = false;
-			balance = 0;
-			err = e;
+			throw new Error(e);
 		}
-
-		return {success: success, balance: balance, unit: 'btc', error: err};
 	}
 
 	async send(fromID, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
 		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
-		var success = true;
-		var txid;
-		var err = null;
+		
 		try {
-			txid = await client.sendFrom(fromID, to, amount, 6);
+			return await client.sendFrom(fromID, to, amount, 6);
 		} catch (e) {
-			success = false;
-			txid = '';
-			err = e;
+			throw new Error(e);
 		}
-
-		return {success: success, txid: txid, error: err};
 	}
 
 	async sendToAccount(fromID, to, amount, gas, unit) {
 		//Send currency to account (sendFrom only takes address)
 		//TODO: consider unit & gas
 		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
-		var success = true;
-		var txid;
-		var err = null;
+		
 		try {
 			var toAddress = await client.getAccountAddress(to);
-			txid = await client.sendFrom(fromID, toAddress, amount, 6);
+			return await client.sendFrom(fromID, toAddress, amount, 6);
 		} catch (e) {
-			success = false;
-			txid = '';
-			err = e;
+			throw new Error(e);
 		}
 
-		return {success: success, txid: txid, error: err};
 	}
 
 	async safeSend(fromID, to, amount, gas, unit) {

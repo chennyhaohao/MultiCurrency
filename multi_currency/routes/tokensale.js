@@ -58,7 +58,9 @@ router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
 		var userid = req.params.userid;
 		var result = await controller.generateWallet(userid, 'btc');
 		//console.log(result);
-
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
 	  	res.json(result);
 	}
 );
@@ -66,7 +68,11 @@ router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
 router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
 	async function(req, res, next) {
 		var userid = req.params.userid;
-		return res.json(await controller.balanceOf(userid, 'btc'));
+		var result = await controller.balanceOf(userid, 'btc');
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
+		return res.json(result);
 	}
 );
 
@@ -79,6 +85,9 @@ router.post('/contribute/btc/',
 		var result = await controller.buyToken(userid, parseFloat(amount),
 			'0x', "btc");
 		console.log(result);
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
 		return res.json(result);
 	}
 );
