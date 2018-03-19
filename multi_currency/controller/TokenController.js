@@ -93,21 +93,10 @@ class TokenController {
 		}
 	}	
 }
-/*
-var controller;
-
-web3.eth.getAccounts( (err, accs) => {
-	if (err) {
-		console.log("Error fetching accounts");
-	} else if (accs.length == 0) {
-		console.log("Cannot find accounts");
-	} else {
-		controller = new TokenController(accs[0]);
-	}
-});*/
 
 
 var controller = new TokenController('0x246682b5d38a4e791be9b75d7fec8a4e9680307d');
+controller.deployToken();
 /*
 controller.deployToken()
 	.then(res => controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44'))
@@ -173,6 +162,6 @@ async function test() {
 	}
 }
 
-test();
+//test();
 
 module.exports = controller;

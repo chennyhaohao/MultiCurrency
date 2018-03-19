@@ -6,16 +6,19 @@ class App extends Component {
   state = { 
             wallet: '',
             userid: '',
-            balance: 0,
+            btcBalance: 0,
+            tokenBalance: 0,
             amount: 0,
-            address: ''
+            address: '',
+            ethWallet: ''
           };
 
   constructor(props) {
       super(props);
       this.generateWallet = this.generateWallet.bind(this);
       this.inputHandler = this.inputHandler.bind(this);
-      this.userBalance = this.userBalance.bind(this);
+      this.btcBalance = this.btcBalance.bind(this);
+      this.tokenBalance = this.tokenBalance.bind(this);
       this.submitHander = this.submitHander.bind(this);
   }
 
@@ -50,10 +53,23 @@ class App extends Component {
         });
   }
 
-  userBalance() {
+  btcBalance() {
       fetch('/tokensale/balance/btc/' + this.state.userid)
       .then(res => res.json())
-      .then(res => this.setState({balance: res.balance}));
+      .then(res => {
+          console.log(res);
+          this.setState({btcBalance: res.balance});
+        }
+      );
+  }
+
+  tokenBalance() {
+      fetch('/tokensale/balance/token/' + this.state.ethWallet)
+      .then(res => res.json())
+      .then(res => {
+        console.log(res);
+        this.setState({tokenBalance: res.balance});
+      });
   }
 
   inputHandler(e) {
@@ -75,7 +91,8 @@ class App extends Component {
         if (res.error) {
           console.log(res.error);
         } else {
-          this.userBalance();
+          this.btcBalance();
+          this.tokenBalance();
         }
       });
   }
@@ -99,13 +116,20 @@ class App extends Component {
               name='userid'
               onChange={this.inputHandler} /> <br />
             Amount: <input 
-              type='text'
+              type='number'
               name='amount'
+              onChange={this.inputHandler} /> <br />
+            Eth Wallet: <input 
+              type='text'
+              name='ethWallet'
               onChange={this.inputHandler} /> <br />
               <input type="submit" value="submit" />
           </form>
-          Balance: <span>{this.state.balance}</span> <br />
-          <button onClick={this.userBalance}>check user balance</button>
+          BTC Balance: <span>{this.state.btcBalance}</span> <br />
+          Token Balance: <span>{this.state.tokenBalance}</span> <br />
+          <button onClick={this.btcBalance}>check btc balance</button>
+          <button onClick={this.tokenBalance}>check token balance</button>
+
 
         </p>
       </div>

@@ -76,14 +76,26 @@ router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
 	}
 );
 
+router.get('/balance/token/:address', 	Middlewares.checkAuthMiddleware,
+	async function(req, res, next) {
+		var address = req.params.address;
+		var result = await controller.tokenBalance(address);
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
+		return res.json(result);
+	}
+);
+
 router.post('/contribute/btc/', 
 	Middlewares.checkAuthMiddleware,
 	async function(req, res, next) {
 		var userid = req.body.userid;
 		var amount = req.body.amount;
+		var toWallet = req.body.ethWallet;
 		console.log(userid);
 		var result = await controller.buyToken(userid, parseFloat(amount),
-			'0x', "btc");
+			toWallet, "btc");
 		console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
