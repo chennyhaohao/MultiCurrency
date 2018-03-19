@@ -16,12 +16,13 @@ router.get('/test', async function(req, res, next) {
 	var result = {};
 	var resultSend = {};
 	var resultUnconf = {};
-	console.log("Generate address");
+	console.log("Get balance");
 	for (var i=0; i<10; i++) {
 		var uname = 'user'+i.toString();
-		result[uname] = controller.generateAddress(uname);
-		//result[uname] = controller.balanceOf(uname);
+		//result[uname] = controller.generateAddress(uname);
+		result[uname] = controller.balanceOf(uname);
 	}
+
 	//send test
 	result = await Promise.props(result);
 	console.log(result);
@@ -29,7 +30,7 @@ router.get('/test', async function(req, res, next) {
 	console.log("Safe send");
 	for (var i=0; i<10; i++) {
 		var uname = 'user'+i.toString();
-		resultSend[uname] = controller.safeSendToAccount('user0', uname, 1.5, 
+		resultSend[uname] = controller.safeSendToAccount(uname,'',result[uname].balance, 
 			0, 'btc');
 	}
 	/*result.user1 = controller.safeSend('', result.user1.address, 0.5, 

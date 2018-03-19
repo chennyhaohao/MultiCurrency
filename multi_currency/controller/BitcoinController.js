@@ -92,6 +92,7 @@ class BitcoinController {
 	async send(fromID, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
+		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 		var success = true;
 		var txid;
 		var err = null;
@@ -109,6 +110,7 @@ class BitcoinController {
 	async sendToAccount(fromID, to, amount, gas, unit) {
 		//Send currency to account (sendFrom only takes address)
 		//TODO: consider unit & gas
+		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 		var success = true;
 		var txid;
 		var err = null;
@@ -143,6 +145,7 @@ class BitcoinController {
 
 			var gas = this.safeGasEstimate(gasFee, amount, numAddr);
 			amount -= gas;
+			amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 			console.log("Amount after fee: ", amount);
 			if (amount <= 0) {
 				err = 'Insufficient funds for transaction fee';
@@ -180,7 +183,10 @@ class BitcoinController {
 
 			var gas = this.safeGasEstimate(gasFee, amount, numAddr);
 			amount -= gas;
+			amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
+
 			console.log("Amount after fee: ", amount);
+
 			if (amount <= 0) {
 				err = 'Insufficient funds for transaction fee';
 				return {success: false, txid: '', error: err};
@@ -210,6 +216,8 @@ class BitcoinController {
 
 	safeGasEstimate(gasFee, amount, numAddr) {
 		//Safe maximum gas fee estimate
+		//Concern: for small contributions (~20usd) we lose about 15-20% (0.0003/0.002)
+		//There should be minimum contribution
 		if (numAddr < 1) numAddr = 1;
 		var nout = 2;
 		var nin = 1;
