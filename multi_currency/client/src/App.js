@@ -10,7 +10,8 @@ class App extends Component {
             tokenBalance: 0,
             amount: 0,
             address: '',
-            ethWallet: ''
+            ethWallet: '',
+            msg: ''
           };
 
   constructor(props) {
@@ -80,6 +81,7 @@ class App extends Component {
 
   submitHander(e) {
       e.preventDefault(); //Important! Control the form behavior!
+      this.setState({msg: "Transaction processing..."});
       fetch('/tokensale/contribute/btc', {
           method: 'post',
           headers: {'Content-Type':'application/json',
@@ -88,6 +90,8 @@ class App extends Component {
       }).then(res => res.json())
       .then(res => {
         console.log(res);
+        this.setState({msg: ""});
+
         if (res.error) {
           console.log(res.error);
         } else {
@@ -106,6 +110,8 @@ class App extends Component {
         </header>
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
+
+
           <p>Wallet: {this.state.wallet}</p>
           <button onClick={this.test}>test</button> <br />
           <button onClick={this.generateWallet}>generate btc wallet</button><br />
@@ -128,8 +134,8 @@ class App extends Component {
           BTC Balance: <span>{this.state.btcBalance}</span> <br />
           Token Balance: <span>{this.state.tokenBalance}</span> <br />
           <button onClick={this.btcBalance}>check btc balance</button>
-          <button onClick={this.tokenBalance}>check token balance</button>
-
+          <button onClick={this.tokenBalance}>check token balance</button><br />
+          <span>Status: {this.state.msg}</span>
 
         </p>
       </div>

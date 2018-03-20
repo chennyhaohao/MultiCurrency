@@ -5,12 +5,17 @@ var DemoToken_artifacts = require(artifacts_path + 'DemoToken.json');
 
 var web3;
 
-if (typeof web3 !== 'undefined') {
+/*if (typeof web3 !== 'undefined') {
   web3 = new Web3(web3.currentProvider);
-} else {
+} else {*/
   // set the provider you want from Web3.providers
-  web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-}
+  web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:3002"));
+  //web3.setProvider();
+//}
+  //web3 = new Web3(web3.currentProvider);
+//console.log("Coinbase:", web3.eth.coinbase);
+//console.log("Balance: ", web3.eth.getBalance('0x96d9b127c3fce317fba175c6390c173d009ba580'));
+console.log("Connected: ", web3.isConnected());
 
 class TokenController {
 
@@ -24,6 +29,7 @@ class TokenController {
 
 	async deployToken() {
 		try {
+			console.log("Deploying token...");
 			var instance = await this.DemoToken.new({from: this.account, 
 	            gas: 4000000});
 			console.log("Token deployed at: ", instance.address);
@@ -95,8 +101,9 @@ class TokenController {
 }
 
 
-var controller = new TokenController('0x246682b5d38a4e791be9b75d7fec8a4e9680307d');
+var controller = new TokenController('0x639b5bb2320e0e77e35c1a4626cde6852f8853d6');
 controller.deployToken();
+console.log("Deploying token");
 /*
 controller.deployToken()
 	.then(res => controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44'))

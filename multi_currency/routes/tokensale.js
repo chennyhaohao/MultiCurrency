@@ -94,7 +94,7 @@ router.post('/contribute/btc/',
 		var amount = req.body.amount;
 		var toWallet = req.body.ethWallet;
 		console.log(userid);
-		var result = await controller.buyToken(userid, parseFloat(amount),
+		var result = await controller.testBuyToken(userid, parseFloat(amount),
 			toWallet, "btc");
 		console.log(result);
 		if (result.error) {
