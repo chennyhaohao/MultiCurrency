@@ -104,5 +104,20 @@ router.post('/contribute/btc/',
 	}
 );
 
+router.post('/withdraw/btc/', Middlewares.checkAuthMiddleware,
+	async function(req, res, next) {
+		var userid = req.body.userid;
+		var amount = req.body.amount;
+		var toAddress = req.body.btcAddress;
+		var result = await controller.withdraw(userid, amount, toAddress, 
+			'btc');
+		console.log(result);
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
+		return res.json(result);
+	}
+);
+
 module.exports = router;
 

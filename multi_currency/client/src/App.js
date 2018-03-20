@@ -11,6 +11,8 @@ class App extends Component {
             amount: 0,
             address: '',
             ethWallet: '',
+            btcAddress: '',
+            txid: '',
             msg: ''
           };
 
@@ -20,7 +22,8 @@ class App extends Component {
       this.inputHandler = this.inputHandler.bind(this);
       this.btcBalance = this.btcBalance.bind(this);
       this.tokenBalance = this.tokenBalance.bind(this);
-      this.submitHander = this.submitHander.bind(this);
+      this.contributeSubmitHandler = this.contributeSubmitHandler.bind(this);
+      this.withdrawBtcSubmitHandler = this.withdrawBtcSubmitHandler.bind(this);
   }
 
   componentDidMount() {
@@ -59,7 +62,9 @@ class App extends Component {
       .then(res => res.json())
       .then(res => {
           console.log(res);
-          this.setState({btcBalance: res.balance});
+          if (!res.error) {
+            this.setState({btcBalance: res.balance});
+          }
         }
       );
   }
@@ -69,7 +74,9 @@ class App extends Component {
       .then(res => res.json())
       .then(res => {
         console.log(res);
-        this.setState({tokenBalance: res.balance});
+        if (!res.error){
+          this.setState({tokenBalance: res.balance});
+        }
       });
   }
 
@@ -79,7 +86,7 @@ class App extends Component {
       this.setState({[target.name]: value});
   }
 
-  submitHander(e) {
+  contributeSubmitHandler(e) {
       e.preventDefault(); //Important! Control the form behavior!
       this.setState({msg: "Transaction processing..."});
       fetch('/tokensale/contribute/btc', {
@@ -101,6 +108,28 @@ class App extends Component {
       });
   }
 
+  withdrawBtcSubmitHandler(e) {
+      e.preventDefault(); //Control the form behavior
+      this.setState({msg: "Transaction processing..."});
+      fetch('/tokensale/withdraw/btc', {
+          method: 'post',
+          headers: {'Content-Type':'application/json',
+                    'Accept': 'application/json'},
+          body: JSON.stringify(this.state) //Stringify the payload
+      }).then(res => res.json())
+      .then(res => {
+        console.log(res);
+        this.setState({msg: ""});
+
+        if (res.error) {
+          console.log(res.error);
+        } else {
+          this.btcBalance();
+          this.setState({txid: res.txid});
+        }
+      });
+  }
+
   render() {
     return (
       <div className="App">
@@ -116,7 +145,7 @@ class App extends Component {
           <button onClick={this.test}>test</button> <br />
           <button onClick={this.generateWallet}>generate btc wallet</button><br />
           Send to this address: <span>{this.state.address}</span>
-          <form onSubmit={this.submitHander}>
+          <form onSubmit={this.contributeSubmitHandler}>
             User ID: <input 
               type='text'
               name='userid'
@@ -130,12 +159,30 @@ class App extends Component {
               name='ethWallet'
               onChange={this.inputHandler} /> <br />
               <input type="submit" value="submit" />
-          </form>
+          </form> <br />
+
+          <form onSubmit={this.withdrawBtcSubmitHandler}>
+            User ID: <input 
+              type='text'
+              name='userid'
+              onChange={this.inputHandler} /> <br />
+            Amount: <input 
+              type='number'
+              name='amount'
+              onChange={this.inputHandler} /> <br />
+            Btc Wallet: <input 
+              type='text'
+              name='btcAddress'
+              onChange={this.inputHandler} /> <br />
+              <input type="submit" value="submit" />
+          </form> <br />
+
           BTC Balance: <span>{this.state.btcBalance}</span> <br />
           Token Balance: <span>{this.state.tokenBalance}</span> <br />
           <button onClick={this.btcBalance}>check btc balance</button>
           <button onClick={this.tokenBalance}>check token balance</button><br />
-          <span>Status: {this.state.msg}</span>
+          <span>Status: {this.state.msg}</span> <br />
+          <span>Txid: {this.state.txid} </span>
 
         </p>
       </div>

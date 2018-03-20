@@ -24,7 +24,7 @@ class BitcoinController {
 		return "BTC";
 	}
 
-	walletValid(wallet) {
+	addressValid(address) {
 		return bitcore.Address.isValid(address, network);
 	}
 
@@ -101,6 +101,9 @@ class BitcoinController {
 		//Send currency		
 		//TODO: consider unit & gas
 		var err;
+		if (!this.addressValid(to)) { //Validate toAddress
+			throw new Error("Invalid address");
+		}
 		try {
 			var gasFee = 0.000001;
 			var balance = client.getBalance(fromID, 6);
