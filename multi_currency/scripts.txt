@@ -1,3 +1,6 @@
 geth --datadir ./eth_private init ./genesis.json
 geth --fast --cache 512 --ipcpath ./geth/geth.ipc --networkid 666 --datadir ./eth_private --rpc console
+
 geth --dev --rpc --rpcport 8545 console
+
+bitcoind -conf=./bitcoin.conf -datadir=./

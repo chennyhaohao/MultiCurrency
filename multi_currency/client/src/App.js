@@ -158,23 +158,16 @@ class App extends Component {
               type='text'
               name='ethWallet'
               onChange={this.inputHandler} /> <br />
-              <input type="submit" value="submit" />
+              <input type="submit" value="contribute" />
           </form> <br />
 
           <form onSubmit={this.withdrawBtcSubmitHandler}>
-            User ID: <input 
-              type='text'
-              name='userid'
-              onChange={this.inputHandler} /> <br />
-            Amount: <input 
-              type='number'
-              name='amount'
-              onChange={this.inputHandler} /> <br />
+            
             Btc Wallet: <input 
               type='text'
               name='btcAddress'
               onChange={this.inputHandler} /> <br />
-              <input type="submit" value="submit" />
+              <input type="submit" value="withdraw btc" />
           </form> <br />
 
           BTC Balance: <span>{this.state.btcBalance}</span> <br />
