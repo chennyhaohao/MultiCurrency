@@ -69,3 +69,8 @@ $npm start
 ``` 
 
 Now we can view the site at http://localhost:3000
+
+## Additional tips
+When testing, you might want to be able to interact with the Bitcoin/Ethereum blockchain testnet, such as topping up an account with some "fake btc/eth" (I know I sometimes do that to feel rich :D).  
+
+To do that, for Bitcoin you need `bitcoin-cli`, which is included in the `bitcore` package you downloaded. See this [link](https://bitcoin.org/en/developer-reference#rpcs) for references on how to use the client. For Ethereum, you can directly use the `geth` JavaScript console that spawns after you start up the geth node. See this [link](https://github.com/ethereumproject/go-ethereum/wiki/JavaScript-Console) for references.
