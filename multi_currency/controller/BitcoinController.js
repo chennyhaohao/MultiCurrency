@@ -69,7 +69,7 @@ class BitcoinController {
 		//Return the amount of balance that has not received 6 confirmations
 		try {
 			var confirmed = client.getBalance(id, this.safeConfirmationNumber);
-			var unconfirmed = client.getBalance(id, 1);
+			var unconfirmed = client.getBalance(id, 0);
 			return (await unconfirmed) - (await confirmed);
 		} catch(e) {
 			throw new Error(e);

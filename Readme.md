@@ -57,11 +57,6 @@ Then start up the `geth` daemon in dev mode:
 $geth --dev --rpc --rpcport 8545 console
 ```
 
-Upon first run, we'll also need to compile the smart contracts. Go to the `controller/` directory and run:  
-```
-$truffle compile 
-```
-(This is only required if the smart contracts have not been compiled/have been changed and require re-compiling)  
 
 Now we can start up our `express` server. Go to the `/multi_currency` directory and run:  
 ```
