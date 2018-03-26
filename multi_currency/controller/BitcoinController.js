@@ -20,6 +20,11 @@ var network = bitcore.Networks.testnet; //Change to livenet in production
 
 class BitcoinController {
 
+	constructor() {
+		this.safeConfirmationNumber = 6; /*Balance with more than 6 confirmations*/
+											/*considered safe*/
+	}
+
 	get name() {
 		return "BTC";
 	}
@@ -54,7 +59,7 @@ class BitcoinController {
 
 	async balanceOf(id) {	
 		try {
-			return await client.getBalance(id, 6);
+			return await client.getBalance(id, this.safeConfirmationNumber);
 		} catch(e) {
 			throw new Error(e);
 		}
@@ -63,7 +68,7 @@ class BitcoinController {
 	async unconfirmedBalance(id) {
 		//Return the amount of balance that has not received 6 confirmations
 		try {
-			var confirmed = client.getBalance(id, 6);
+			var confirmed = client.getBalance(id, this.safeConfirmationNumber);
 			var unconfirmed = client.getBalance(id, 1);
 			return (await unconfirmed) - (await confirmed);
 		} catch(e) {
@@ -77,7 +82,8 @@ class BitcoinController {
 		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 		
 		try {
-			return await client.sendFrom(fromID, to, amount, 6);
+			return await client.sendFrom(fromID, to, amount, 
+				this.safeConfirmationNumber);
 		} catch (e) {
 			throw new Error(e);
 		}
@@ -90,7 +96,8 @@ class BitcoinController {
 		
 		try {
 			var toAddress = await client.getAccountAddress(to);
-			return await client.sendFrom(fromID, toAddress, amount, 6);
+			return await client.sendFrom(fromID, toAddress, amount, 
+				this.safeConfirmationNumber);
 		} catch (e) {
 			throw new Error(e);
 		}
@@ -106,7 +113,7 @@ class BitcoinController {
 		}
 		try {
 			var gasFee = 0.000001;
-			var balance = client.getBalance(fromID, 6);
+			var balance = client.getBalance(fromID, this.safeConfirmationNumber);
 			var numAddr = client.getAddressesByAccount(fromID);
 			if ((await balance) < amount) {
 				err = 'Insufficient funds';
@@ -124,7 +131,8 @@ class BitcoinController {
 				throw new Error(err);
 			}
 
-			return await client.sendFrom(fromID, to, amount, 6);
+			return await client.sendFrom(fromID, to, amount, 
+				this.safeConfirmationNumber);
 		} catch (e) {
 			throw new Error(e);
 		}
@@ -135,7 +143,7 @@ class BitcoinController {
 		//TODO: consider unit & gas
 		try {
 			var gasFee = 0.000001;
-			var balance = client.getBalance(fromID, 6);
+			var balance = client.getBalance(fromID, this.safeConfirmationNumber);
 			var numAddr = client.getAddressesByAccount(fromID);
 			if ((await balance) < amount) {
 				var err = 'Insufficient funds';
@@ -156,8 +164,9 @@ class BitcoinController {
 				var err = 'Insufficient funds for transaction fee';
 				throw new Error(err);
 			}
-			
-			return await client.sendFrom(fromID, (await toAddress), amount, 6);
+
+			return await client.sendFrom(fromID, (await toAddress), amount, 
+				this.safeConfirmationNumber);
 		} catch (e) {
 			throw new Error(e);
 		}

@@ -2,11 +2,11 @@
 Traditionally, in tokensales of ERC20 tokens, only contributions in ETH are accepted. This system will allows users to purchase ERC20 tokens with other cryptocurrencies, such as BTC.  
 
 ## User flow
-When using the system, a user will first have to sign up and potentially go through a KYC verification process. After logging in, the user will get to choose the currency with which to purchase tokens (currenctly only ETH & BTC will be supported). If the user chooses ETH, the website will simply reveal the Ethereum smart contract address to which users can send their ETH, along with instructions such as the gas fee and gas limit to set. There will be also a panel where the user can input an Ethereum address and query its token balance.  
+When using the system, a user will first have to sign up and potentially go through a KYC verification process. After logging in, the user will get to choose the currency with which to purchase tokens (currenctly only ETH & BTC will be supported).  
 
-If the user instead chooses BTC, the process will be a bit more involved: each user will have a BTC account in the system and they will able to see its balance. The website will also present the user with a BTC address, to which the user can send BTC to top up their account balance. After topping up the account, the user can then use the account balance to purchase tokens. The user will have to specify their Ethereum wallet address with which they will receive the tokens, and the amount of tokens to purchase (a conversion calculator will then automatically show them the corresponding cost in BTC). If the user confirms the purchase, the system backend will process the contribution by transferring BTC from the user's account to the team's multisig wallet, and if successful, issue tokens to the Ethereum address specified by the user.  
+For simplicity, let's assume the user chooses BTC: each user will then have a BTC account in the system and they will able to see its balance. The website will also present the user with a BTC address, to which the user can send BTC to top up their account balance. After topping up the account, the user can then use the account balance to purchase tokens. The user will have to specify their Ethereum wallet address with which they will receive the tokens, and the amount of tokens to purchase (a conversion calculator will then automatically show them the corresponding cost in BTC). If the user confirms the purchase, the system backend will process the contribution by transferring BTC from the user's account to the team's multisig wallet, and if successful, issue tokens to the Ethereum address specified by the user.  
 
-Due to the high transaction time of the blockchain, the processing can take up to 30 sec - 1 min. The webpage should prompt users with a "Transaction processing..." message, until the server returns the result (success/failure), upon which the webpage will display the result to the user. The panel to query token balance will also be present, so that users can check whether the tokens have arrived in their wallet.  
+Due to the high transaction time of the blockchain, the processing can take up to 30 sec - 1.5 min. The webpage should prompt users with a "Transaction processing..." message, until the server returns the result (success/failure), upon which the webpage will display the result to the user. There will be also a panel where the user can input an Ethereum address and query its token balance, so that users can check whether the tokens have arrived in their wallet.  
 
 If the user doesn't want to purchase any more tokens but still has left-over balance in their BTC account, they can choose to withdraw the BTC to their own wallet. The user will have to specify their own wallet address to which the BTC will be sent, and also the amount of BTC to withdraw. If the user confirms the withdrawal, the backend will then send the BTC to the address specified by the user.  
 
@@ -14,8 +14,13 @@ If the user doesn't want to purchase any more tokens but still has left-over bal
 The core backend controller handling BTC contributions (in the `/controller` directory); a basic router setup (implemented with the `express` framework); an extremely barebone frontend interface for basic testing (in the `/client` directory, implemented with the `react` framework).  
 
 ## What needs to be done
-A sign-up and login system; a decent frontend; rigorous testing; iterations  
-Potentially integration of a KYC system  
+
+A sign-up and login system; a frontend; potentially integration of a KYC system  
+  
+No need to extensively style the frontend, as we likely have to style the frontend differently depending on each client. We just need the basic layout for now.  
+
+In the database: apart from basic user information (userid, username, e-mail, password hash, salt, etc.) we likely also need to store an encrypted Ethereum private key for each user.  
+
 
 ## Installation
 To install the project, first clone this repository:  
