@@ -25,6 +25,7 @@ contract Crowdsale is Ownable {
 	}
 
 	function setFunder(address _funder) public onlyOwner {
+		require(_funder != address(0));
 		funder = _funder;
 	}
 

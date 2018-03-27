@@ -25,6 +25,7 @@ class TokenController {
 		this.DemoToken.setProvider(web3.currentProvider);
 		this.Crowdsale.setProvider(web3.currentProvider);
 		this.tokenAddress = '';
+		this.crowdsaleAddress = '';
 		this.account = account;
 		console.log("TokenController initialized");
 	}
@@ -43,14 +44,67 @@ class TokenController {
     	}
 	}
 
+	async deployCrowdsale() {
+		try {
+			console.log("Deploying crowdsale...");
+			var instance = await this.Crowdsale.new(this.tokenAddress,
+				{from: this.account, gas: 4000000});
+			console.log("Crowdsale deployed at: ", instance.address);
+			this.crowdsaleAddress = instance.address;
+	        return instance.address;
+		} catch (e) {
+    		console.log(e);
+    		throw new Error(e);
+    	}
+	}
+
+	async setMaxCap(maxCap) {
+		try {
+			var value = web3.toWei(maxCap, "ether"); //Unit translation
+	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
+	        var result = await crowdsaleInstance.setMaxCap(value, {
+	            from: this.account
+	        });
+	        console.log(result);
+	        return result.tx;
+		} catch(e) {
+			//console.log(e);
+			throw new Error(e);
+		}
+	}
+
+	async setFunder(funder) {
+		if (!web3.isAddress(funder)) { //Validate funder address
+			throw new Error("Invalid address", funder);
+		}
+		try {
+			var [crowdsaleInstance, tokenInstance] = await Promise.all([
+					this.Crowdsale.at(this.crowdsaleAddress),
+					this.DemoToken.at(this.tokenAddress)
+				]); //Getting instances
+			await tokenInstance.approve(this.crowdsaleAddress, 
+				web3.toWei(1000, "ether"), {
+	            from: this.account
+	        }); //funder approve crowdsale contract
+	        var result = await crowdsaleInstance.setFunder(funder, {
+	            from: this.account
+	        });
+	        console.log(result);
+	        return result.tx;
+		} catch(e) {
+			//console.log(e);
+			throw new Error(e);
+		}
+	}
+
 	async issueToken(to, amount, reserved) {
 		if (!web3.isAddress(to)) { //Validate toAddress
 			throw new Error("Invalid address");
 		}
 		try {
 			var value = web3.toWei(amount, "ether"); //Unit translation
-	        var tokenInstance = await this.DemoToken.at(this.tokenAddress);
-	        var result = await tokenInstance.issue(to, value, reserved, {
+	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
+	        var result = await crowdsaleInstance.issue(to, value, reserved, {
 	            from: this.account
 	        });
 	        console.log(result);
@@ -67,8 +121,8 @@ class TokenController {
 		}
 		try {
 			var value = web3.toWei(amount, "ether"); //Unit translation
-	        var tokenInstance = await this.DemoToken.at(this.tokenAddress);
-	        var result = await tokenInstance.reserve(to, value, {
+	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
+	        var result = await crowdsaleInstance.reserve(to, value, {
 	            from: this.account
 	        });
 	        console.log(result);
@@ -85,8 +139,8 @@ class TokenController {
 		}
 		try {
 			var value = web3.toWei(amount, "ether"); //Unit translation
-	        var tokenInstance = await this.DemoToken.at(this.tokenAddress);
-	        var result = await tokenInstance.cancelRsvp(to, value, {
+	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
+	        var result = await crowdsaleInstance.cancelRsvp(to, value, {
 	            from: this.account
 	        });
 	        console.log(result);
@@ -116,7 +170,11 @@ class TokenController {
 
 
 var controller = new TokenController(web3.eth.coinbase); //Replace with actual controller address
-controller.deployToken();
+/*await controller.deployToken();
+await controller.deployCrowdsale();
+await Promise.all([controller.setMaxCap(1000),
+ controller.setFunder(controller.account)]);*/
+
 //console.log("Deploying token");
 /*
 controller.deployToken()
@@ -131,8 +189,17 @@ async function test() {
 	console.log("Is address (expect true): ", web3.isAddress(web3.eth.coinbase));
 	console.log("Is address (expect false): ", web3.isAddress('asdlfkj'));
 
+	// Setup
 	await controller.deployToken();
-	controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+	await controller.deployCrowdsale();
+	await Promise.all([controller.setMaxCap(1000),
+	 controller.setFunder(controller.account)]);
+
+	console.log("random balance: (expect 0) ");
+	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+	console.log("coinbase balance (expect 1000): ");
+	await controller.balanceOf(controller.account);
+
 	try { //Cannot issue more than reserved
 		await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		100, true);
@@ -140,6 +207,7 @@ async function test() {
 	} catch(e) {
 		console.log("Expected error: Cannot issue more than reserved", e);
 	}
+
 	try { //Cannot reserve more than cap
 		await controller.reserve('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		1001);
@@ -149,6 +217,7 @@ async function test() {
 	}
 	await controller.reserve('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		100);
+
 	try { //Cannot reserve more than cap
 		await controller.reserve('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		901);
@@ -156,9 +225,15 @@ async function test() {
 	} catch(e) {
 		console.log("Expected error: Cannot reserve more than cap");
 	}
+
 	await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		50, true);
-	controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+
+	console.log("coinbase balance (expect 950): ");
+	await controller.balanceOf(controller.account);
+	console.log("recipient balance (expect 50): ");
+	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+
 	try { //Cannot cancel more than available reservation
 		await controller.cancelRsvp('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		51, true);
@@ -166,8 +241,10 @@ async function test() {
 	} catch(e) {
 		console.log("Expected error: Cannot cancel more than available reservation");
 	}
+
 	await controller.cancelRsvp('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		50, true);
+
 	try { //Cannot issue more than reserved
 		await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		1, true);
@@ -175,17 +252,28 @@ async function test() {
 	} catch(e) {
 		console.log("Expected error: Cannot issue more than reserved");
 	}
+
 	await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		1, false);
-	controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+	
+	console.log("coinbase balance (expect 949): ");
+	await controller.balanceOf(controller.account);
+	console.log("recipient balance (expect 51): ");
+	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
+
 	try { //Cannot contribute more than cap
 		await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		951, false);
 	} catch(e) {
 		console.log("Expected error: Cannot contribute more than cap", e);
 	}
+
+	console.log("coinbase balance (expect 949): ");
+	await controller.balanceOf(controller.account);
+	console.log("recipient balance (expect 51): ");
+	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
 }
 
-//test();
+test();
 
 module.exports = controller;
