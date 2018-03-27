@@ -1,17 +1,31 @@
-import './StandardToken.sol';
 import './Ownable.sol';
+import './SafeMath.sol';
+import './ERC20.sol';
 
-contract DemoToken is StandardToken, Ownable{
-	uint8 public decimals = 18;
-	uint256 maxCap = 1000 * (10**uint256(decimals));
-	uint256 tokenSold = 0;
+contract Crowdsale is Ownable {
+	using SafeMath for uint256;
+
+	address public tokenAddress;
+	address private funder;
+	ERC20 public token;
+	uint256 public maxCap;
+	uint256 public tokenSold = 0;
 	mapping(address => uint256) tokenReserved;
 	event Issue(address recipient, uint256 amount);
 
 
-	function DemoToken() public {
+	function Crowdsale(address _tokenAddress) public {
 		owner = msg.sender;
-		balances[msg.sender] = (10**uint256(decimals)).mul(1000);
+		tokenAddress = _tokenAddress;
+		token = ERC20(tokenAddress);
+	}
+
+	function setMaxCap(uint256 _maxCap) public onlyOwner {
+		maxCap = _maxCap;
+	}
+
+	function setFunder(address _funder) public onlyOwner {
+		funder = _funder;
 	}
 
 	function reserve(address recipient, uint256 amount) public onlyOwner {
@@ -30,7 +44,7 @@ contract DemoToken is StandardToken, Ownable{
 
 	function issue(address recipient, uint256 amount, bool reserved) 
 	public onlyOwner {
-		if (reserved) {
+		if (reserved) { //Already reserved and added to tokenSold
 			require(amount <= tokenReserved[recipient]); //Cannot contribute more than reserved
 			tokenReserved[recipient] = tokenReserved[recipient].sub(amount);
 			//This part of reservation is spent
@@ -38,8 +52,9 @@ contract DemoToken is StandardToken, Ownable{
 			require(tokenSold.add(amount) <= maxCap); //Cannot exceed cap
 			tokenSold = tokenSold.add(amount);
 		}
-		balances[recipient] = balances[recipient].add(amount);
-		totalSupply = totalSupply.add(amount);
+		//balances[recipient] = balances[recipient].add(amount);
+		//totalSupply = totalSupply.add(amount);
+		assert(token.transferFrom(funder, recipient, amount)); //Transfer to recipient
 		Issue(recipient, amount);
 	}
 }

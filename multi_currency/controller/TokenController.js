@@ -2,7 +2,7 @@ var Web3 = require('web3');
 var contract = require('truffle-contract');
 var artifacts_path = './build/contracts/';
 var DemoToken_artifacts = require(artifacts_path + 'DemoToken.json');
-
+var Crowdsale_artifacts = require(artifacts_path + 'Crowdsale.json');
 var web3;
 
 /*if (typeof web3 !== 'undefined') {
@@ -21,7 +21,9 @@ class TokenController {
 
 	constructor(account) {
 		this.DemoToken = contract(DemoToken_artifacts);
+		this.Crowdsale = contract(Crowdsale_artifacts);
 		this.DemoToken.setProvider(web3.currentProvider);
+		this.Crowdsale.setProvider(web3.currentProvider);
 		this.tokenAddress = '';
 		this.account = account;
 		console.log("TokenController initialized");
