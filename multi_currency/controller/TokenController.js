@@ -170,10 +170,14 @@ class TokenController {
 
 
 var controller = new TokenController(web3.eth.coinbase); //Replace with actual controller address
-/*await controller.deployToken();
-await controller.deployCrowdsale();
-await Promise.all([controller.setMaxCap(1000),
- controller.setFunder(controller.account)]);*/
+
+async function init() {
+	await controller.deployToken();
+	await controller.deployCrowdsale();
+	await Promise.all([controller.setMaxCap(1000),
+	 controller.setFunder(controller.account)]);
+	return;
+}
 
 //console.log("Deploying token");
 /*
@@ -185,6 +189,7 @@ controller.deployToken()
 		100, true))
 	.then(res => controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44'));
 */
+
 async function test() {
 	console.log("Is address (expect true): ", web3.isAddress(web3.eth.coinbase));
 	console.log("Is address (expect false): ", web3.isAddress('asdlfkj'));
@@ -274,6 +279,7 @@ async function test() {
 	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
 }
 
-test();
+//test();
+init();
 
 module.exports = controller;
