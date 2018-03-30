@@ -9,9 +9,20 @@ const Auth = {
     username: null,
     token: null,
 
-    authenticate(cb) {
-        this.isAuthenticated = true;
-        setTimeout(cb, 100); // fake async
+    authenticate(data, cb) {
+        fetch('/users/login', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data),
+        }).then(res => res.json()).then(res => {
+            this.username = res.data.username;
+            this.token = res.data.token;
+            this.isAuthenticated = true;
+            cb();
+        });
     },
     signout(cb) {
         this.isAuthenticated = false;
