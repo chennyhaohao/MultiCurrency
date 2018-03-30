@@ -1,4 +1,5 @@
 import React from 'react';
+import Navigation from '../Navigation/NavigationComponent';
 
 class HomeComponent extends React.Component {
     state = {
@@ -133,6 +134,7 @@ class HomeComponent extends React.Component {
     render() {
         return (
             <div className="HomeComponent">
+                <Navigation/>
                 <p>Wallet: {this.state.wallet}</p>
                 <button onClick={this.test}>test</button> <br />
                 <button onClick={this.generateWallet}>generate btc wallet</button><br />

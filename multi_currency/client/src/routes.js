@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import Home from './components/Home/HomeComponent';
 import Login from './components/Login/LoginComponent';
+import Logout from './components/Login/LogoutComponent';
 
 const Auth = {
     isAuthenticated: false,
@@ -26,7 +27,7 @@ const Auth = {
     },
     signout(cb) {
         this.isAuthenticated = false;
-        setTimeout(cb, 100);
+        cb();
     }
 };
 
@@ -53,6 +54,7 @@ const Routes = () => (
         <Switch>
             <PrivateRoute exact path="/" component={Home} />
             <Route path="/login" component={Login} />
+            <Route path="/logout" component={Logout} />
         </Switch>
     </BrowserRouter>
 );

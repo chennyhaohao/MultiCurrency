@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Auth } from '../../routes';
 import '../../App.css';
+import Navigation from '../Navigation/NavigationComponent';
 
 class LoginComponent extends React.Component {
     
@@ -34,6 +35,7 @@ class LoginComponent extends React.Component {
         }
         return (
             <div className="loginForm">
+                <Navigation />
                 <h1>Login</h1>
                 <label>Username</label>
                 <input type="text" name="login" placeholder="Username" onChange={this.onChange} />
