@@ -30,6 +30,10 @@ router.post('/login', function (req, res, next) {
     let token = sha256(Date.now().toString());
 
     con.query("SELECT * FROM users WHERE ?", { username: username }, function (err, result) {
+        if (err) {
+            res.json(returnState(false, null, { msg: err }));
+            return;
+        }
         if (result.length == 0) {
             res.json(returnState(false, null, { msg: "Wrong username or password!" }));
             return;
