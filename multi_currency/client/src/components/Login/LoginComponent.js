@@ -22,7 +22,8 @@ class LoginComponent extends React.Component {
         this.setState({ [e.target.name]: e.target.value });
     }
 
-    login() {
+    login(e) {
+        e.preventDefault();
         console.log(this.state);
         Auth.authenticate(this.state, () => {
             this.setState({ redirectLogin: Auth.isAuthenticated })
@@ -36,12 +37,14 @@ class LoginComponent extends React.Component {
         return (
             <div className="loginForm">
                 <Navigation />
-                <h1>Login</h1>
-                <label>Username</label>
-                <input type="text" name="login" placeholder="Username" onChange={this.onChange} />
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Password" onChange={this.onChange} />
-                <input type="submit" value="Login" onClick={this.login} />
+                <form onSubmit={this.login} >
+                    <h1>Login</h1>
+                    <label>Username</label>
+                    <input type="text" name="login" placeholder="Username" onChange={this.onChange} />
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Password" onChange={this.onChange} />
+                    <input type="submit" value="Login" />
+                </form>
                 <Link to="/register">Register</Link>
             </div>  
         );
