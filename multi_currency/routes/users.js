@@ -12,12 +12,22 @@ function sha256(data) {
     return crypto.createHash("sha256").update(data).digest("base64");
 }
 
-var con = mysql.createConnection({
+const dbParams = {
     host: 's69.hekko.pl',
     user: 'polkomwq_mc',
     password: 'hvrS9N0H',
     database: 'polkomwq_mc',
-});
+}
+
+var con = mysql.createConnection(dbParams);
+
+function execError(err) {
+    switch (err.code) {
+        case PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR:
+            con = mysql.createConnection(dbParams);
+        break;
+    }
+}
 
 router.get('/', function(req, res, next) {
 	var result = controller.increment();
@@ -31,6 +41,7 @@ router.post('/login', function (req, res, next) {
 
     con.query("SELECT * FROM users WHERE ?", { username: username }, function (err, result) {
         if (err) {
+            execError(err);
             res.json(returnState(false, null, { msg: err }));
             return;
         }
