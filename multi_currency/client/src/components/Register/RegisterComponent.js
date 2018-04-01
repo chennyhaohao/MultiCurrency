@@ -30,6 +30,7 @@ class RegisterComponent extends React.Component {
                 body: JSON.stringify(this.state),
             }).then(res => res.json()).then(res => {
                 if (res.status === true) {
+                    alert(res.data);
                     this.setState({ redirectToLogin: true });
                 } else if (res.status === false) {
                     alert(res.error.msg);

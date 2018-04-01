@@ -21,14 +21,6 @@ const dbParams = {
 
 var con = mysql.createConnection(dbParams);
 
-function execError(err) {
-    switch (err.code) {
-        case PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR:
-            con = mysql.createConnection(dbParams);
-        break;
-    }
-}
-
 router.get('/', function(req, res, next) {
 	var result = controller.increment();
 	res.send("done");
@@ -40,11 +32,8 @@ router.post('/login', function (req, res, next) {
     let token = sha256(Date.now().toString());
 
     con.query("SELECT * FROM users WHERE ?", { username: username }, function (err, result) {
-        if (err) {
-            execError(err);
-            res.json(returnState(false, null, { msg: err }));
-            return;
-        }
+        if (err) throw err;
+
         if (result.length == 0) {
             res.json(returnState(false, null, { msg: "Wrong username or password!" }));
             return;
@@ -57,6 +46,23 @@ router.post('/login', function (req, res, next) {
             res.json(returnState(true, { username: result.username, token: token }));
         } else {
             res.json(returnState(false, null, { msg: "Wrong username or password!" }));
+        }
+    });
+});
+
+router.post('/register', function (req, res, next) {
+
+    con.query("SELECT COUNT(*) AS thisSameUsers FROM users WHERE username=? OR email=?", [req.body.username, req.body.email], function (err, result) {
+        if (err) throw err;
+        if (result[0].thisSameUsers === 0) {
+            let password = sha256(req.body.password);
+            con.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [req.body.username, req.body.email, password], function (err, result) {
+                if (err) throw err;
+
+                res.json(returnState(true, "Account has been created. Now login."));
+            });
+        } else {
+            res.json(returnState(false, null, { msg: "You already registered. Please login first." }));
         }
     });
 });
