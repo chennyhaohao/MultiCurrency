@@ -20,6 +20,10 @@ const Auth = {
             },
             body: JSON.stringify(data),
         }).then(res => res.json()).then(res => {
+            if (res.data === null) {
+                alert(res.error.msg);
+                return;
+            }
             this.username = res.data.username;
             this.token = res.data.token;
             this.isAuthenticated = true;
