@@ -8,29 +8,34 @@ import Register from './components/Register/RegisterComponent';
 
 const Auth = {
     isAuthenticated: false,
-    username: null,
     token: null,
+
+    headers(token = null) {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token,
+        }
+    },
 
     authenticate(data, cb) {
         fetch('/users/login', {
             method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers: this.headers(),
             body: JSON.stringify(data),
         }).then(res => res.json()).then(res => {
             if (res.data === null) {
                 alert(res.error.msg);
                 return;
             }
-            this.username = res.data.username;
             this.token = res.data.token;
+            console.log(this.token);
             this.isAuthenticated = true;
             cb();
         });
     },
     signout(cb) {
+        this.token = null;
         this.isAuthenticated = false;
         cb();
     }

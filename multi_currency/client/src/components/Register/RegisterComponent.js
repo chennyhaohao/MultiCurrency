@@ -1,5 +1,6 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
+import { Auth } from '../../routes';
 import Navigation from '../Navigation/NavigationComponent';
 
 class RegisterComponent extends React.Component {
@@ -15,11 +16,20 @@ class RegisterComponent extends React.Component {
 
         this.onChange = this.onChange.bind(this);
         this.register = this.register.bind(this);
+        this.testRequest = this.testRequest.bind(this);
+    }
+
+    testRequest() { // Example of security request to server
+        fetch('/users/', {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        }).then(res => res.json()).then(res => {
+            alert(res.status);
+        });
     }
 
     register(e) {
         e.preventDefault();
-        console.log(this.state);
         if (this.state.password === this.state.password2) {
             fetch('/users/register', {
                 method: 'post',
@@ -50,6 +60,7 @@ class RegisterComponent extends React.Component {
         let redirect = this.state.redirectToLogin ? <Redirect to="/login" /> : null;
         return (
             <div className="loginForm">
+                <button onClick={this.testRequest}>Test auth request</button>
                 <Navigation />
                 {redirect}
                 <form onSubmit={this.register}>
