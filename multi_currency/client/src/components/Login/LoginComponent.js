@@ -12,6 +12,7 @@ class LoginComponent extends React.Component {
             login: '',
             password: '',
             redirectLogin: false,
+            rememberMe: false,
         }
 
         this.onChange = this.onChange.bind(this);
@@ -26,7 +27,7 @@ class LoginComponent extends React.Component {
         e.preventDefault();
         console.log(this.state);
         Auth.authenticate(this.state, () => {
-            this.setState({ redirectLogin: Auth.isAuthenticated })
+            this.setState({ redirectLogin: Auth.isAuthenticated() })
         });
     }
 
@@ -43,6 +44,10 @@ class LoginComponent extends React.Component {
                     <input type="text" name="login" placeholder="Username" onChange={this.onChange} />
                     <label>Password</label>
                     <input type="password" name="password" placeholder="Password" onChange={this.onChange} />
+                    <div>
+                        <input type="checkbox" name="rememberMe" id="rememberMe" onChange={this.onChange} value={this.rememberMe} />
+                        <label htmlFor="rememberMe">Remember me</label>
+                    </div>
                     <input type="submit" value="Login" />
                 </form>
                 <Link to="/register">Register</Link>

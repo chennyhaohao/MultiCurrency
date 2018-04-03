@@ -4,7 +4,7 @@ import { Auth } from '../../routes';
 
 class NavigationComponent extends React.Component {
     render() {
-        const loginLogoutButton = Auth.isAuthenticated ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>;
+        const loginLogoutButton = Auth.isAuthenticated() ? <Link to="/logout">Logout</Link> : <Link to="/login">Login</Link>;
 
         return (
             <div>

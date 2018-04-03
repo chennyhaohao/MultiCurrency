@@ -1,13 +1,16 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
+import jwt from 'jsonwebtoken';
 
 import Home from './components/Home/HomeComponent';
 import Login from './components/Login/LoginComponent';
 import Logout from './components/Login/LogoutComponent';
 import Register from './components/Register/RegisterComponent';
 
+const JWT_SECRET = "58F42AF9AC6B673724A6A67BEE39B";
+
 const Auth = {
-    isAuthenticated: false,
+    m_isAuthenticated: false,
     token: null,
 
     headers(token = null) {
@@ -16,6 +19,22 @@ const Auth = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + token,
         }
+    },
+
+    isAuthenticated() {
+        if (!this.m_isAuthenticated) {
+            this.token = localStorage.getItem('token');
+            if (this.token != null) {
+                try {
+                    jwt.verify(this.token, JWT_SECRET);
+                    this.m_isAuthenticated = true;
+                } catch (err) {
+                    this.signout(() => { console.log("Logged out") });
+                }
+            }
+        }
+        console.log(this.m_isAuthenticated);
+        return this.m_isAuthenticated;
     },
 
     authenticate(data, cb) {
@@ -29,14 +48,18 @@ const Auth = {
                 return;
             }
             this.token = res.data.token;
-            console.log(this.token);
-            this.isAuthenticated = true;
+            if (data.rememberMe) {
+                localStorage.setItem('token', this.token);
+            }
+            this.m_isAuthenticated = true;
             cb();
         });
     },
+
     signout(cb) {
         this.token = null;
-        this.isAuthenticated = false;
+        this.m_isAuthenticated = false;
+        localStorage.removeItem('token');
         cb();
     }
 };
@@ -45,7 +68,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route
         {...rest}
         render={props =>
-            Auth.isAuthenticated ? (
+            Auth.isAuthenticated() ? (
                 <Component {...props} />
             ) : (
                 <Redirect
