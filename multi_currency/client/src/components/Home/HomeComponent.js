@@ -1,4 +1,5 @@
 import React from 'react';
+import { Auth } from '../../routes';
 import Navigation from '../Navigation/NavigationComponent';
 
 class HomeComponent extends React.Component {
@@ -46,7 +47,10 @@ class HomeComponent extends React.Component {
     }
 
     generateWallet() {
-        fetch('/tokensale/generate-wallet/btc/' + this.state.userid)
+        fetch('/tokensale/generate-wallet/btc/', {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -55,7 +59,10 @@ class HomeComponent extends React.Component {
     }
 
     btcBalance() {
-        fetch('/tokensale/balance/btc/' + this.state.userid)
+        fetch('/tokensale/balance/btc/', {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -67,7 +74,10 @@ class HomeComponent extends React.Component {
     }
 
     tokenBalance() {
-        fetch('/tokensale/balance/token/' + this.state.ethWallet)
+        fetch('/tokensale/balance/token/' + this.state.ethWallet, {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -88,10 +98,7 @@ class HomeComponent extends React.Component {
         this.setState({ msg: "Transaction processing..." });
         fetch('/tokensale/contribute/btc', {
             method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: Auth.headers(Auth.token),
             body: JSON.stringify(this.state) //Important! Stringify the payload!
         }).then(res => res.json())
             .then(res => {
@@ -112,10 +119,7 @@ class HomeComponent extends React.Component {
         this.setState({ msg: "Transaction processing..." });
         fetch('/tokensale/withdraw/btc', {
             method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: Auth.headers(Auth.token),
             body: JSON.stringify(this.state) //Stringify the payload
         }).then(res => res.json())
             .then(res => {

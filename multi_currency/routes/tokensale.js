@@ -2,11 +2,11 @@ var express = require('express');
 var router = express.Router();
 var btcController = require('../controller/BitcoinController.js');
 var controller = require('../controller/MasterController.js');
-var Middlewares = require('./middlewares.js');
+var Auth = require('./Authentication.js');
 var Promise = require('bluebird');
 
 
-router.get('/', function(req, res, next) {
+router.get('/', Auth.ensureAuthorized, function(req, res, next) {
 	var result = controller.checkBalance('1', 'btc');
 	console.log(result);
   	res.json(result);
@@ -53,9 +53,11 @@ router.get('/test', async function(req, res, next) {
   	res.json(resultSend);
 });
 
-router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
+router.get('/generate-wallet/btc/', Auth.ensureAuthorized,
 	 async function(req, res, next) {
-		var userid = req.params.userid;
+	 	console.log(req.user);
+	 	console.log(req.user.id);
+		var userid = req.user.id.toString(); //get user id from request auth token
 		var result = await controller.generateWallet(userid, 'btc');
 		//console.log(result);
 		if (result.error) {
@@ -65,9 +67,9 @@ router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
 	}
 );
 
-router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
+router.get('/balance/btc/', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.params.userid;
+		var userid = req.user.id.toString(); //get user id from request auth token
 		var result = await controller.balanceOf(userid, 'btc');
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
@@ -76,7 +78,7 @@ router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
 	}
 );
 
-router.get('/balance/token/:address', 	Middlewares.checkAuthMiddleware,
+router.get('/balance/token/:address', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		var address = req.params.address;
 		var result = await controller.tokenBalance(address);
@@ -88,12 +90,12 @@ router.get('/balance/token/:address', 	Middlewares.checkAuthMiddleware,
 );
 
 router.post('/contribute/btc/', 
-	Middlewares.checkAuthMiddleware,
+	Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.body.userid;
+		var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
 		var toWallet = req.body.ethWallet;
-		console.log(userid);
+		console.log("id: ", userid);
 		var result = await controller.testBuyToken(userid, parseFloat(amount),
 			toWallet, "btc");
 		console.log(result);
@@ -104,9 +106,9 @@ router.post('/contribute/btc/',
 	}
 );
 
-router.post('/withdraw/btc/', Middlewares.checkAuthMiddleware,
+router.post('/withdraw/btc/', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.body.userid;
+		var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
 		var toAddress = req.body.btcAddress;
 		var result = await controller.withdraw(userid, amount, toAddress, 

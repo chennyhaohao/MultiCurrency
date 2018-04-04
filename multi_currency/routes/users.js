@@ -5,6 +5,7 @@ var moment = require('moment');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var controller = require('../controller/template.js');
+var Auth = require('./Authentication.js');
 
 process.env.JWT_SECRET = "58F42AF9AC6B673724A6A67BEE39B";
 
@@ -70,8 +71,9 @@ function ensureAuthorized(req, res, next) {
     }
 }
 
-router.get('/', ensureAuthorized, function (req, res, next) {
-	var result = controller.increment();
+router.get('/', Auth.ensureAuthorized, function (req, res, next) {
+	//var result = controller.increment();
+    console.log(req.user);
     res.json({ status: "done" });
 });
 
@@ -89,7 +91,7 @@ router.post('/login', function (req, res, next) {
 
         result = result[0];
 
-        const token = encodeToken(result);
+        const token = Auth.encodeToken(result);
 
         if (password === result.password) {
             con.query("UPDATE users SET token=? WHERE username=?", [token, username], function (err, user) {
