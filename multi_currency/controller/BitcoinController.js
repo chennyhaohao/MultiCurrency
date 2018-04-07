@@ -57,6 +57,10 @@ class BitcoinController {
 		*/
 	}
 
+	async getAddress(id) {
+		return await this.generateAddress(id);
+	}
+
 	async balanceOf(id) {	
 		try {
 			return await client.getBalance(id, this.safeConfirmationNumber);

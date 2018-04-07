@@ -48,6 +48,26 @@ class TokenSaleController { //Core operations
 		return {success: success, address: addr, error: err};
 	}
 
+	async getWallet(id, currency) {
+		
+		var success = true;
+		var addr, controller;
+		var err = null;
+
+		try {
+			controller = selectController(currency);
+			addr = await controller.getAddress(id);
+		} catch(e) {
+			success = false;
+			err = e;
+			addr = '';
+		}
+
+		return {success: success, address: addr, error: err};
+	}
+
+
+
 	async balanceOf(id, currency) {
 		/*Check `id`s balance of `currency`*/
 		//Check if id & wallet exists

@@ -66,6 +66,19 @@ router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
 	}
 );
 
+router.get('/get-wallet/:currency/', Auth.ensureAuthorized,
+	 async function(req, res, next) {
+		var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.getWallet(userid, 
+			req.params.currency);
+		//console.log(result);
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
+	  	res.json(result);
+	}
+);
+
 router.get('/balance/btc/', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		var userid = req.user.id.toString(); //get user id from request auth token

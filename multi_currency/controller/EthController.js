@@ -31,21 +31,47 @@ class EthController {
                     throw new Error("Invalid id");
                 }
                 else {
+                	acc = user[0].eth_key;
+                	if (acc != null) { //Account already created
+                		console.log("replacing old account: ", acc);
+                	}
+                	console.log("creating eth account...");
+                	acc = await web3.eth.personal.newAccount(pass);
+                	con.query("UPDATE users SET eth_key=? WHERE id=?", 
+                		[acc, id], function (err, user) {
+		                if (err) throw err;
+		                console.log("Account inserted: ", acc);
+		                resolve(acc);
+		            });
+                }
+            });
+            return await result;
+		} catch (e) {
+			throw new Error(e);
+		}
+	}
+
+	async getAddress(id) {
+		var resolve, acc;
+		var result = new Promise((res, rej) => {
+			resolve = res; //Move resolve function to outside scope
+		});
+		try {
+			con.query("SELECT * FROM users WHERE id=?", [id], async (err, user) => {
+                if (err) {
+                	throw new Error(e);
+                }
+                else if (user.length === 0) {
+                    throw new Error("Invalid id");
+                }
+                else {
                     acc = user[0].eth_key;
                     if (acc == null) { //Account hasn't been created
-                    	console.log("creating eth account...");
-                    	acc = await web3.eth.personal.newAccount(pass);
-                    	con.query("UPDATE users SET eth_key=? WHERE id=?", 
-                    		[acc, id], function (err, user) {
-			                if (err) throw err;
-			                console.log("Account inserted: ", acc);
-			                resolve(acc);
-			            });
+                    	throw new Error("Eth account not yet created");
                     } else {
                     	console.log("Account: ", acc);
                     	resolve(acc);
-                    }
-                    
+                    }                  
                 }
             });
             return await result;
