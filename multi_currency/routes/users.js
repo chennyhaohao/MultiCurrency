@@ -5,6 +5,7 @@ var moment = require('moment');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var controller = require('../controller/template.js');
+var con = require('./db.js');
 var Auth = require('./Authentication.js');
 
 process.env.JWT_SECRET = "58F42AF9AC6B673724A6A67BEE39B";
@@ -12,7 +13,7 @@ process.env.JWT_SECRET = "58F42AF9AC6B673724A6A67BEE39B";
 function returnState(status = false, data = {}, error = null) {
     return { status: status, data: data, error: error };
 }
-
+/*
 const dbParams = {
     host: 's69.hekko.pl',
     user: 'polkomwq_mc',
@@ -21,7 +22,7 @@ const dbParams = {
 }
 
 var con = mysql.createConnection(dbParams);
-
+*/
 router.get('/', Auth.ensureAuthorized, function (req, res, next) {
 	//var result = controller.increment();
     res.json({ status: "done" });

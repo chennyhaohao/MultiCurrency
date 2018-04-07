@@ -53,10 +53,11 @@ router.get('/test', async function(req, res, next) {
   	res.json(resultSend);
 });
 
-router.get('/generate-wallet/btc/', Auth.ensureAuthorized,
+router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
 	 async function(req, res, next) {
 		var userid = req.user.id.toString(); //get user id from request auth token
-		var result = await controller.generateWallet(userid, 'btc');
+		var result = await controller.generateWallet(userid, 
+			req.params.currency);
 		//console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods

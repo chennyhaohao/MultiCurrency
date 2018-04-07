@@ -46,8 +46,8 @@ class HomeComponent extends React.Component {
         }
     }
 
-    generateWallet() {
-        fetch('/tokensale/generate-wallet/btc/', {
+    generateWallet(currency) {
+        fetch('/tokensale/generate-wallet/' + currency + '/' , {
             method: 'get',
             headers: Auth.headers(Auth.token),
         })
@@ -141,7 +141,12 @@ class HomeComponent extends React.Component {
                 <Navigation/>
                 <p>Wallet: {this.state.wallet}</p>
                 <button onClick={this.test}>test</button> <br />
-                <button onClick={this.generateWallet}>generate btc wallet</button><br />
+                <button onClick={() => {
+                    this.generateWallet('btc');
+                }} >generate btc wallet</button><br />
+                <button onClick={() => {
+                    this.generateWallet('eth');
+                }} >generate eth wallet</button><br />
                 Send to this address: <span>{this.state.address}</span>
                 <form onSubmit={this.contributeSubmitHandler}>
                     User ID: <input

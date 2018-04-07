@@ -2,16 +2,7 @@ var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var mysql = require('mysql');
-
-
-const dbParams = {
-    host: 's69.hekko.pl',
-    user: 'polkomwq_mc',
-    password: 'hvrS9N0H',
-    database: 'polkomwq_mc',
-}
-
-var con = mysql.createConnection(dbParams);
+var con = require('./db.js');
 
 const Auth = {
 	sha256: (data) => {
@@ -57,6 +48,7 @@ const Auth = {
 	                    }
 	                    else {
 	                        req.user = user[0];
+	                        console.log(req.user);
 	                        next();
 	                    }
 	                });

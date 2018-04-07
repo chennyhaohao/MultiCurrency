@@ -1,5 +1,6 @@
 var btcController = require('./BitcoinController.js');
 var tokenController = require('./TokenController.js');
+var ethController = require('./EthController.js');
 
 function sleep(ms) {
 	return new Promise((resolve, reject) => {
@@ -7,6 +8,15 @@ function sleep(ms) {
 	});
 }
 
+function selectController(currency) {
+	if (currency == 'btc') {
+		return btcController;
+	} else if (currency == 'eth') {
+		return ethController;
+	} else {
+		throw new Error("Invalid currency");
+	}
+}
 
 class TokenSaleController { //Core operations
 	
@@ -23,10 +33,12 @@ class TokenSaleController { //Core operations
 		//Masterkey & pepper should be input manually at server start
 		//User need to re-enter pass/go through email confirmation
 		var success = true;
-		var addr;
+		var addr, controller;
 		var err = null;
+
 		try {
-			addr = await btcController.generateAddress(id);
+			controller = selectController(currency);
+			addr = await controller.generateAddress(id);
 		} catch(e) {
 			success = false;
 			err = e;
@@ -41,16 +53,19 @@ class TokenSaleController { //Core operations
 		//Check if id & wallet exists
 		//Query balance from api
 		var success = true;
-		var balance;
-		var unit = "btc"
+		var balance, controller;
 		var err = null;
+		var unit = currency;
+		
 		try {
-			balance = await btcController.balanceOf(id);
+			controller = selectController(currency);
+			balance = await controller.balanceOf(id);
 		} catch(e) {
 			success = false;
 			err = e;
 			balance = 0;
 		}
+
 		return {success: success, balance: balance, unit: unit, error: err};
 	}
 
