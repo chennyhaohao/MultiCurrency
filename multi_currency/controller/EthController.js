@@ -78,17 +78,29 @@ class EthController {
 		}
 	}
 
-	async send(fromID, to, amount, gas, unit) {
-		//Send currency		
-		//TODO: consider unit & gas
-		/*amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
-		
-		try {
-			return await client.sendFrom(fromID, to, amount, 
-				this.safeConfirmationNumber);
-		} catch (e) {
-			throw new Error(e);
-		}*/
+	async safeSend(user, to, amount, gas, unit) {
+		var acc = user.eth_key;
+		if (!acc) {
+        	console.log("Eth account not yet created");
+        	throw new Error("Eth account not yet created");
+        }
+
+        if(!(await this.addressValid(to))){
+        	throw new Error("Invalid address");
+        }
+		var id = user.id.toString(); //get user id from request auth token
+		var pass = Auth.sha256(id);
+
+        try {
+        	amount = web3.utils.toWei(amount.toString(10), "ether");
+        	await web3.eth.personal.unlockAccount(acc, pass, 5);
+        	var result = await web3.eth.sendTransaction({from: acc, to: to,
+				value: amount});
+        	console.log(result);
+        	return result.transactionHash;
+        } catch(e) {
+        	throw new Error(e);
+        }
 	}
 
 

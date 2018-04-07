@@ -200,7 +200,8 @@ class TokenSaleController { //Core operations
 		var err = null;
 		
 		try {
-			txid = await btcController.safeSend(user, toAddress, amount, 0, 'btc');
+			controller = selectController(currency);
+			txid = await controller.safeSend(user, toAddress, amount, 0, 'btc');
 		} catch(e) {
 			success = false;
 			txid = '';

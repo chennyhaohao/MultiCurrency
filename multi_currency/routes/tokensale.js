@@ -53,7 +53,7 @@ router.get('/test', async function(req, res, next) {
   	res.json(resultSend);
 });
 
-router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
+router.get('/generate-wallet/:currency', Auth.ensureAuthorized,
 	 async function(req, res, next) {
 		//var userid = req.user.id.toString(); //get user id from request auth token
 		var result = await controller.generateWallet(req.user, 
@@ -66,9 +66,9 @@ router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
 	}
 );
 
-router.get('/get-wallet/:currency/', Auth.ensureAuthorized,
+router.get('/get-wallet/:currency', Auth.ensureAuthorized,
 	 async function(req, res, next) {
-		var userid = req.user.id.toString(); //get user id from request auth token
+		//var userid = req.user.id.toString(); //get user id from request auth token
 		var result = await controller.getWallet(req.user, 
 			req.params.currency);
 		//console.log(result);
@@ -79,10 +79,11 @@ router.get('/get-wallet/:currency/', Auth.ensureAuthorized,
 	}
 );
 
-router.get('/balance/btc/', Auth.ensureAuthorized,
+router.get('/balance/:currency', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.user.id.toString(); //get user id from request auth token
-		var result = await controller.balanceOf(req.user, 'btc');
+		//var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.balanceOf(req.user, 
+			req.params.currency);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
 		}
@@ -90,7 +91,7 @@ router.get('/balance/btc/', Auth.ensureAuthorized,
 	}
 );
 
-router.get('/balance/token/:address', Auth.ensureAuthorized,
+router.get('/tokenbalance/:address', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		var address = req.params.address;
 		var result = await controller.tokenBalance(address);
@@ -118,13 +119,13 @@ router.post('/contribute/btc/',
 	}
 );
 
-router.post('/withdraw/btc/', Auth.ensureAuthorized,
+router.post('/withdraw/:currency', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		//var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
-		var toAddress = req.body.btcAddress;
+		var toAddress = req.body.withdrawAddress;
 		var result = await controller.withdraw(req.user, amount, toAddress, 
-			'btc');
+			req.params.currency);
 		console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
