@@ -23,9 +23,14 @@ class LoginComponent extends React.Component {
         this.setState({ [e.target.name]: e.target.value });
     }
 
+    componentDidMount() {
+        Auth.isAuthenticated((cb) => {
+            this.setState({ redirectLogin: cb });
+        })
+    }
+
     login(e) {
         e.preventDefault();
-        console.log(this.state);
         Auth.authenticate(this.state, () => {
             this.setState({ redirectLogin: Auth.isAuthenticated() })
         });

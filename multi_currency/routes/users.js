@@ -13,10 +13,6 @@ function returnState(status = false, data = {}, error = null) {
     return { status: status, data: data, error: error };
 }
 
-function sha256(data) {
-    return crypto.createHash("sha256").update(data).digest("base64");
-}
-
 const dbParams = {
     host: 's69.hekko.pl',
     user: 'polkomwq_mc',
@@ -28,13 +24,12 @@ var con = mysql.createConnection(dbParams);
 
 router.get('/', Auth.ensureAuthorized, function (req, res, next) {
 	//var result = controller.increment();
-    console.log(req.user);
     res.json({ status: "done" });
 });
 
 router.post('/login', function (req, res, next) {
     let username = req.body.login;
-    let password = sha256(req.body.password);
+    let password = Auth.sha256(req.body.password);
 
     con.query("SELECT * FROM users WHERE ?", { username: username }, function (err, result) {
         if (err) throw err;
@@ -64,7 +59,7 @@ router.post('/register', function (req, res, next) {
     con.query("SELECT COUNT(*) AS thisSameUsers FROM users WHERE username=? OR email=?", [req.body.username, req.body.email], function (err, result) {
         if (err) throw err;
         if (result[0].thisSameUsers === 0) {
-            let password = sha256(req.body.password);
+            let password = Auth.sha256(req.body.password);
             con.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [req.body.username, req.body.email, password], function (err, result) {
                 if (err) throw err;
 
@@ -74,6 +69,10 @@ router.post('/register', function (req, res, next) {
             res.json(returnState(false, null, { msg: "You already registered. Please login first." }));
         }
     });
+});
+
+router.post('/auth', Auth.ensureAuthorized, (req, res, next) => {
+    res.status(200).json(returnState(true));
 });
 
 module.exports = router;
