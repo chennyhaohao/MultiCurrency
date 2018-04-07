@@ -55,8 +55,8 @@ router.get('/test', async function(req, res, next) {
 
 router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
 	 async function(req, res, next) {
-		var userid = req.user.id.toString(); //get user id from request auth token
-		var result = await controller.generateWallet(userid, 
+		//var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.generateWallet(req.user, 
 			req.params.currency);
 		//console.log(result);
 		if (result.error) {
@@ -69,7 +69,7 @@ router.get('/generate-wallet/:currency/', Auth.ensureAuthorized,
 router.get('/get-wallet/:currency/', Auth.ensureAuthorized,
 	 async function(req, res, next) {
 		var userid = req.user.id.toString(); //get user id from request auth token
-		var result = await controller.getWallet(userid, 
+		var result = await controller.getWallet(req.user, 
 			req.params.currency);
 		//console.log(result);
 		if (result.error) {
@@ -82,7 +82,7 @@ router.get('/get-wallet/:currency/', Auth.ensureAuthorized,
 router.get('/balance/btc/', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		var userid = req.user.id.toString(); //get user id from request auth token
-		var result = await controller.balanceOf(userid, 'btc');
+		var result = await controller.balanceOf(req.user, 'btc');
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
 		}
@@ -108,7 +108,7 @@ router.post('/contribute/btc/',
 		var amount = req.body.amount;
 		var toWallet = req.body.ethWallet;
 		console.log("id: ", userid);
-		var result = await controller.testBuyToken(userid, parseFloat(amount),
+		var result = await controller.testBuyToken(req.user, parseFloat(amount),
 			toWallet, "btc");
 		console.log(result);
 		if (result.error) {
@@ -120,10 +120,10 @@ router.post('/contribute/btc/',
 
 router.post('/withdraw/btc/', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.user.id.toString(); //get user id from request auth token
+		//var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
 		var toAddress = req.body.btcAddress;
-		var result = await controller.withdraw(userid, amount, toAddress, 
+		var result = await controller.withdraw(req.user, amount, toAddress, 
 			'btc');
 		console.log(result);
 		if (result.error) {

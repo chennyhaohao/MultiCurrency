@@ -12,11 +12,12 @@ class EthController {
 		return "ETH";
 	}
 
-	addressValid(address) {
-		return web3.utils.isAddress(address);
+	async addressValid(address) {
+		return await web3.utils.isAddress(address);
 	}
 
-	async generateAddress(id) {
+	async generateAddress(user) {
+		var id = user.id.toString(); //get user id from request auth token
 		var pass = Auth.sha256(id);
 		var resolve, acc;
 		var result = new Promise((res, rej) => {
@@ -51,59 +52,28 @@ class EthController {
 		}
 	}
 
-	async getAddress(id) {
-		var resolve, acc;
-		var result = new Promise((res, rej) => {
-			resolve = res; //Move resolve function to outside scope
-		});
-		try {
-			con.query("SELECT * FROM users WHERE id=?", [id], async (err, user) => {
-                if (err) {
-                	throw new Error(e);
-                }
-                else if (user.length === 0) {
-                    throw new Error("Invalid id");
-                }
-                else {
-                    acc = user[0].eth_key;
-                    if (acc == null) { //Account hasn't been created
-                    	throw new Error("Eth account not yet created");
-                    } else {
-                    	console.log("Account: ", acc);
-                    	resolve(acc);
-                    }                  
-                }
-            });
-            return await result;
-		} catch (e) {
-			throw new Error(e);
+	async getAddress(user) {
+		if (user.eth_key == null) {
+			console.log("Eth account not yet created");
+			throw new Error("Eth account not yet created");
+		} else {
+			return user.eth_key;
 		}
 	}
 
-	async balanceOf(id) {
+	async balanceOf(user) {
 		var acc, balance;
 		try {
-			con.query("SELECT * FROM users WHERE id=?", [id], async (err, user) => {
-                if (err) {
-                	throw new Error(e);
-                }
-                else if (user.length === 0) {
-                    throw new Error("Invalid id");
-                }
-                else {
-                    acc = user[0].eth_key;
-                    if (!acc) {
-                    	console.log("Eth account not yet created");
-                    	throw new Error("Eth account not yet created");
-                    }
-                    balance = await web3.eth.getBalance(acc);
-                    balance = web3.utils.fromWei(balance.toString(10), "ether");
-                    console.log("Eth balance:", balance);
-                    return balance;
-                }
-            });
-			
-		} catch(e) {
+            acc = user.eth_key;
+            if (!acc) {
+            	console.log("Eth account not yet created");
+            	throw new Error("Eth account not yet created");
+            }
+            balance = await web3.eth.getBalance(acc);
+            balance = web3.utils.fromWei(balance.toString(10), "ether");
+            console.log("Eth balance:", balance);
+            return balance;
+        } catch(e) {
 			throw new Error(e);
 		}
 	}

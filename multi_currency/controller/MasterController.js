@@ -21,7 +21,7 @@ function selectController(currency) {
 class TokenSaleController { //Core operations
 	
 
-	async generateWallet(id, currency) {
+	async generateWallet(user, currency) {
 		/*Create wallet address in `currency` for `id`,
 		 which receives contributions*/
 		//Check id exists
@@ -38,7 +38,7 @@ class TokenSaleController { //Core operations
 
 		try {
 			controller = selectController(currency);
-			addr = await controller.generateAddress(id);
+			addr = await controller.generateAddress(user);
 		} catch(e) {
 			success = false;
 			err = e;
@@ -48,7 +48,7 @@ class TokenSaleController { //Core operations
 		return {success: success, address: addr, error: err};
 	}
 
-	async getWallet(id, currency) {
+	async getWallet(user, currency) {
 		
 		var success = true;
 		var addr, controller;
@@ -56,7 +56,7 @@ class TokenSaleController { //Core operations
 
 		try {
 			controller = selectController(currency);
-			addr = await controller.getAddress(id);
+			addr = await controller.getAddress(user);
 		} catch(e) {
 			success = false;
 			err = e;
@@ -68,7 +68,7 @@ class TokenSaleController { //Core operations
 
 
 
-	async balanceOf(id, currency) {
+	async balanceOf(user, currency) {
 		/*Check `id`s balance of `currency`*/
 		//Check if id & wallet exists
 		//Query balance from api
@@ -79,7 +79,7 @@ class TokenSaleController { //Core operations
 		
 		try {
 			controller = selectController(currency);
-			balance = await controller.balanceOf(id);
+			balance = await controller.balanceOf(user);
 		} catch(e) {
 			success = false;
 			err = e;
@@ -104,7 +104,7 @@ class TokenSaleController { //Core operations
 		return {success: success, balance: balance, unit: unit, error: err};
 	}
 
-	async buyToken(id, amount, toWallet, currency) {
+	async buyToken(user, amount, toWallet, currency) {
 		/*Buy `amount` tokens into `ethWallet` with `currency`*/
 		//Check id & wallet exists
 		//Check wallet validity?
@@ -125,14 +125,14 @@ class TokenSaleController { //Core operations
 		var btcAmount = amount/xrate;
 		try {
 			//TODO: check user kyc token limit
-			var balance = await btcController.balanceOf(id);
+			var balance = await btcController.balanceOf(user);
 			if (balance < btcAmount) { //Check balance
 				return {success: false, txid:'', error: new Error("Insufficient funds")};
 			}
 
 			await tokenController.reserve(toWallet, amount); 
 			try {
-				btc_txid = await btcController.safeSendToAccount(id, 'multisig', btcAmount,
+				btc_txid = await btcController.safeSendToAccount(user, 'multisig', btcAmount,
 					0, 'btc');
 			} catch(e) { //If fails, cancel reservation
 				await tokenController.cancelRsvp(toWallet, amount);
@@ -149,7 +149,7 @@ class TokenSaleController { //Core operations
 		}
 	}
 
-	async testBuyToken(id, amount, toWallet, currency) {
+	async testBuyToken(user, amount, toWallet, currency) {
 		//Simulate the blockchain delay!
 
 
@@ -161,7 +161,7 @@ class TokenSaleController { //Core operations
 		var xrate = 10;
 		var btcAmount = amount/xrate;
 		try {
-			var balance = await btcController.balanceOf(id);
+			var balance = await btcController.balanceOf(user);
 			if (balance < btcAmount) { //Check balance
 				return {success: false, txid:'', error: new Error("Insufficient funds")};
 			}
@@ -169,7 +169,7 @@ class TokenSaleController { //Core operations
 			await tokenController.reserve(toWallet, amount); 
 			await sleep(delay);
 			try {
-				btc_txid = await btcController.safeSendToAccount(id, 'multisig', btcAmount,
+				btc_txid = await btcController.safeSendToAccount(user, 'multisig', btcAmount,
 					0, 'btc');
 			} catch(e) { //If fails, cancel reservation
 				await tokenController.cancelRsvp(toWallet, amount);
@@ -188,7 +188,7 @@ class TokenSaleController { //Core operations
 		return {success: success, txid: txid, error: err};
 	}
 
-	async withdraw(id, amount, toAddress, currency) {
+	async withdraw(user, amount, toAddress, currency) {
 		/*Withdraw `amount` `currency` into `wallet`*/
 		//Check id & wallet exists
 		//Check wallet validity?
@@ -200,7 +200,7 @@ class TokenSaleController { //Core operations
 		var err = null;
 		
 		try {
-			txid = await btcController.safeSend(id, toAddress, amount, 0, 'btc');
+			txid = await btcController.safeSend(user, toAddress, amount, 0, 'btc');
 		} catch(e) {
 			success = false;
 			txid = '';
