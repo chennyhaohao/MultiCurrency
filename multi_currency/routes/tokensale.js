@@ -55,8 +55,6 @@ router.get('/test', async function(req, res, next) {
 
 router.get('/generate-wallet/btc/', Auth.ensureAuthorized,
 	 async function(req, res, next) {
-	 	console.log(req.user);
-	 	console.log(req.user.id);
 		var userid = req.user.id.toString(); //get user id from request auth token
 		var result = await controller.generateWallet(userid, 'btc');
 		//console.log(result);

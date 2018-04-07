@@ -13,9 +13,21 @@ var web3;
   //web3.setProvider();
 //}
   //web3 = new Web3(web3.currentProvider);
-console.log("Coinbase:", web3.eth.coinbase);
+var coinbase;
 //console.log("Balance: ", web3.eth.getBalance('0x96d9b127c3fce317fba175c6390c173d009ba580'));
 //console.log("Connected: ", web3.isConnected());
+
+function web3versionFix(abstract) {
+	//Fix truffle compatibility issue with web3 v1.0.0
+	if (typeof abstract.currentProvider.sendAsync !== "function") {
+			console.log("Fixing");
+		  abstract.currentProvider.sendAsync = function() {
+		    return abstract.currentProvider.send.apply(
+		      abstract.currentProvider, arguments
+		    );
+		};
+	}
+}
 
 class TokenController {
 
@@ -24,10 +36,16 @@ class TokenController {
 		this.Crowdsale = contract(Crowdsale_artifacts);
 		this.DemoToken.setProvider(web3.currentProvider);
 		this.Crowdsale.setProvider(web3.currentProvider);
+		web3versionFix(this.DemoToken);
+		web3versionFix(this.Crowdsale);
 		this.tokenAddress = '';
 		this.crowdsaleAddress = '';
 		this.account = account;
 		console.log("TokenController initialized");
+	}
+
+	setAccount(acc) {
+		this.account = acc;
 	}
 
 	async deployToken() {
@@ -60,7 +78,7 @@ class TokenController {
 
 	async setMaxCap(maxCap) {
 		try {
-			var value = web3.toWei(maxCap, "ether"); //Unit translation
+			var value = web3.utils.toWei(maxCap.toString(), "ether"); //Unit translation
 	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
 	        var result = await crowdsaleInstance.setMaxCap(value, {
 	            from: this.account
@@ -74,7 +92,7 @@ class TokenController {
 	}
 
 	async setFunder(funder) {
-		if (!web3.isAddress(funder)) { //Validate funder address
+		if (!web3.utils.isAddress(funder)) { //Validate funder address
 			throw new Error("Invalid address", funder);
 		}
 		try {
@@ -83,7 +101,7 @@ class TokenController {
 					this.DemoToken.at(this.tokenAddress)
 				]); //Getting instances
 			await tokenInstance.approve(this.crowdsaleAddress, 
-				web3.toWei(1000, "ether"), {
+				web3.utils.toWei('1000', "ether"), {
 	            from: this.account
 	        }); //funder approve crowdsale contract
 	        var result = await crowdsaleInstance.setFunder(funder, {
@@ -98,11 +116,11 @@ class TokenController {
 	}
 
 	async issueToken(to, amount, reserved) {
-		if (!web3.isAddress(to)) { //Validate toAddress
+		if (!web3.utils.isAddress(to)) { //Validate toAddress
 			throw new Error("Invalid address");
 		}
 		try {
-			var value = web3.toWei(amount, "ether"); //Unit translation
+			var value = web3.utils.toWei(amount.toString(), "ether"); //Unit translation
 	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
 	        var result = await crowdsaleInstance.issue(to, value, reserved, {
 	            from: this.account
@@ -116,11 +134,11 @@ class TokenController {
 	}
 
 	async reserve(to, amount) {
-		if (!web3.isAddress(to)) { //Validate toAddress
+		if (!web3.utils.isAddress(to)) { //Validate toAddress
 			throw new Error("Invalid address");
 		}
 		try {
-			var value = web3.toWei(amount, "ether"); //Unit translation
+			var value = web3.utils.toWei(amount.toString(), "ether"); //Unit translation
 	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
 	        var result = await crowdsaleInstance.reserve(to, value, {
 	            from: this.account
@@ -134,11 +152,11 @@ class TokenController {
 	}
 
 	async cancelRsvp(to, amount) {
-		if (!web3.isAddress(to)) {
+		if (!web3.utils.isAddress(to)) {
 			throw new Error("Invalid address");
 		}
 		try {
-			var value = web3.toWei(amount, "ether"); //Unit translation
+			var value = web3.utils.toWei(amount.toString(), "ether"); //Unit translation
 	        var crowdsaleInstance = await this.Crowdsale.at(this.crowdsaleAddress);
 	        var result = await crowdsaleInstance.cancelRsvp(to, value, {
 	            from: this.account
@@ -152,15 +170,16 @@ class TokenController {
 	}	
 
 	async balanceOf(addr) {
-		if (!web3.isAddress(addr)) {
+		if (!web3.utils.isAddress(addr)) {
 			throw new Error("Invalid address");
 		}
 		try {
 			var tokenInstance = await this.DemoToken.at(this.tokenAddress);
 	        var balance = await tokenInstance.balanceOf.call(addr, 
 	            {from: this.account});
-	        console.log("balance: ", web3.fromWei(balance.valueOf(), "ether"));
-	        return web3.fromWei(balance.valueOf(), "ether");
+	        console.log("balance: ", web3.utils.fromWei(
+	        	balance.toString(10), "ether"));
+	        return web3.utils.fromWei(balance.toString(10), "ether");
 		} catch(e) {
 			console.log(e);
 			throw new Error(e);
@@ -169,9 +188,12 @@ class TokenController {
 }
 
 
-var controller = new TokenController(web3.eth.coinbase); //Replace with actual controller address
+var controller = new TokenController(''); //Replace with actual controller address
 
 async function init() {
+	coinbase = await web3.eth.getCoinbase();
+	console.log("Coinbase:", coinbase);
+	controller.setAccount(coinbase);
 	await controller.deployToken();
 	await controller.deployCrowdsale();
 	await Promise.all([controller.setMaxCap(1000),
@@ -191,14 +213,16 @@ controller.deployToken()
 */
 
 async function test() {
-	console.log("Is address (expect true): ", web3.isAddress(web3.eth.coinbase));
-	console.log("Is address (expect false): ", web3.isAddress('asdlfkj'));
+	//await init();
+
+	console.log("Is address (expect true): ", web3.utils.isAddress(coinbase));
+	console.log("Is address (expect false): ", web3.utils.isAddress('asdlfkj'));
 
 	// Setup
-	await controller.deployToken();
+	/*await controller.deployToken();
 	await controller.deployCrowdsale();
 	await Promise.all([controller.setMaxCap(1000),
-	 controller.setFunder(controller.account)]);
+	 controller.setFunder(controller.account)]);*/
 
 	console.log("random balance: (expect 0) ");
 	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
@@ -210,7 +234,7 @@ async function test() {
 		100, true);
 		console.log("Reserved issue error");
 	} catch(e) {
-		console.log("Expected error: Cannot issue more than reserved", e);
+		console.log("Expected error: Cannot issue more than reserved", e.message);
 	}
 
 	try { //Cannot reserve more than cap
@@ -218,7 +242,7 @@ async function test() {
 		1001);
 		console.log("Reservation error");
 	} catch(e) {
-		console.log("Expected error: Cannot reserve more than cap");
+		console.log("Expected error: Cannot reserve more than cap", e.message);
 	}
 	await controller.reserve('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		100);
@@ -228,7 +252,7 @@ async function test() {
 		901);
 		console.log("Reservation error");
 	} catch(e) {
-		console.log("Expected error: Cannot reserve more than cap");
+		console.log("Expected error: Cannot reserve more than cap", e.message);
 	}
 
 	await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
@@ -270,7 +294,7 @@ async function test() {
 		await controller.issueToken('0xc48c902b59c5aea72664c9d60b30fde6fae03a44',
 		951, false);
 	} catch(e) {
-		console.log("Expected error: Cannot contribute more than cap", e);
+		console.log("Expected error: Cannot contribute more than cap", e.message);
 	}
 
 	console.log("coinbase balance (expect 949): ");
@@ -279,7 +303,83 @@ async function test() {
 	await controller.balanceOf('0xc48c902b59c5aea72664c9d60b30fde6fae03a44');
 }
 
-//test();
-init();
+async function test2() {
+	coinbase = await web3.eth.getCoinbase();
+	console.log("Coinbase:", coinbase);
+	var account = await web3.eth.personal.newAccount("pass");
+	console.log(account);
+	try {
+		await web3.eth.personal.unlockAccount(account, "wrong");
+		console.log("Error: wrong password")
+	} catch(e) {
+		console.log("Expected error: wrong password", e.message);
+	}
 
+	try {
+		await web3.eth.sendTransaction({from: account, to: coinbase,
+			value: '1'});
+		console.log("Error: locked account");
+	} catch(e) {
+		console.log("Expected error: locked account", e.message);
+	}
+
+	console.log("Unlock account: ",
+		await web3.eth.personal.unlockAccount(account, "pass"));
+
+	try {
+		await web3.eth.sendTransaction({from: account, to: coinbase,
+			value: '0'});
+		console.log("Error: insufficient balance");
+	} catch(e) {
+		console.log("Expected error: insufficient balance", e.message);
+	}
+
+	console.log("Send: ", 
+		await web3.eth.sendTransaction({from: coinbase, to: account,
+			value: web3.utils.toWei("1")}));
+
+	console.log("Account balance: ", await web3.eth.getBalance(account));
+
+	try {
+		await web3.eth.sendTransaction({from: account, to: coinbase,
+			value: web3.utils.toWei("1")});
+		console.log("Error: insufficient balance");
+	} catch(e) {
+		console.log("Expected error: insufficient balance", e.message);
+	}
+
+	console.log("Send from: ", await web3.eth.sendTransaction({from: account, 
+		to: coinbase, value: web3.utils.toWei("0.5")}));
+
+	console.log("Account balance: ", await web3.eth.getBalance(account));
+
+	try {
+		console.log("Consecutive sends...");
+		var send = web3.eth.sendTransaction({from: account, 
+			to: coinbase, value: web3.utils.toWei("0.3")});
+		var send2 = web3.eth.sendTransaction({from: account, 
+			to: coinbase, value: web3.utils.toWei("0.3")});
+		//await Promise.all([send, send2]);
+		//await send;
+		//console.log("First send complete");
+		//await send2;
+		//console.log("Consecutive sends error");
+	} catch(e) {
+		console.log("Expected error: consecutive sends insufficient balance"
+			, e.message);
+	}
+
+	//console.log("Account balance: ", await web3.eth.getBalance(account));
+
+	console.log("Send from: ", await web3.eth.sendTransaction({from: account, 
+		to: coinbase, value: web3.utils.toWei("0.1")}));
+
+	console.log("Account balance: ", await web3.eth.getBalance(account));
+	test();
+}
+
+//test2();
 module.exports = controller;
+init();
+test2();
+
