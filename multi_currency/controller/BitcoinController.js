@@ -33,8 +33,8 @@ class BitcoinController {
 		return bitcore.Address.isValid(address, network);
 	}
 
-	async generateAddress(id) {
-		
+	async generateAddress(user) {
+		var id = user.id.toString(); //get user id from request auth token
 		try {
 			return (await client.getAccountAddress(id));
 		} catch (e) {
@@ -57,7 +57,13 @@ class BitcoinController {
 		*/
 	}
 
-	async balanceOf(id) {	
+	async getAddress(user) {
+		var id = user.id.toString(); //get user id from request auth token
+		return await this.generateAddress(id);
+	}
+
+	async balanceOf(user) {	
+		var id = user.id.toString(); //get user id from request auth token
 		try {
 			return await client.getBalance(id, this.safeConfirmationNumber);
 		} catch(e) {
@@ -65,8 +71,9 @@ class BitcoinController {
 		}
 	}
 
-	async unconfirmedBalance(id) {
+	async unconfirmedBalance(user) {
 		//Return the amount of balance that has not received 6 confirmations
+		var id = user.id.toString(); //get user id from request auth token
 		try {
 			var confirmed = client.getBalance(id, this.safeConfirmationNumber);
 			var unconfirmed = client.getBalance(id, 0);
@@ -76,9 +83,10 @@ class BitcoinController {
 		}
 	}
 
-	async send(fromID, to, amount, gas, unit) {
+	async send(user, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
+		var fromID = user.id.toString(); //get user id from request auth token
 		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 		
 		try {
@@ -89,9 +97,10 @@ class BitcoinController {
 		}
 	}
 
-	async sendToAccount(fromID, to, amount, gas, unit) {
+	async sendToAccount(user, to, amount, gas, unit) {
 		//Send currency to account (sendFrom only takes address)
 		//TODO: consider unit & gas
+		var fromID = user.id.toString(); //get user id from request auth token
 		amount = parseFloat(amount.toFixed(8)); //Bitcoin maximum precision
 		
 		try {
@@ -104,9 +113,10 @@ class BitcoinController {
 
 	}
 
-	async safeSend(fromID, to, amount, gas, unit) {
+	async safeSend(user, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
+		var fromID = user.id.toString(); //get user id from request auth token
 		var err;
 		if (!this.addressValid(to)) { //Validate toAddress
 			throw new Error("Invalid address");
@@ -138,9 +148,10 @@ class BitcoinController {
 		}
 	}
 
-	async safeSendToAccount(fromID, to, amount, gas, unit) {
+	async safeSendToAccount(user, to, amount, gas, unit) {
 		//Send currency		
 		//TODO: consider unit & gas
+		var fromID = user.id.toString(); //get user id from request auth token
 		try {
 			var gasFee = 0.000001;
 			var balance = client.getBalance(fromID, this.safeConfirmationNumber);

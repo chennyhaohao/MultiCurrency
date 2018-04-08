@@ -26,3 +26,11 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+
+.loginForm {
+    display: flex;
+    flex-direction: column;
+    max-width: 250px;
+    margin: 0 auto;
+}

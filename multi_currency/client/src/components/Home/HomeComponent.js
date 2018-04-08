@@ -1,15 +1,18 @@
 import React from 'react';
+import { Auth } from '../../routes';
+import Navigation from '../Navigation/NavigationComponent';
 
 class HomeComponent extends React.Component {
     state = {
         wallet: '',
         userid: '',
         btcBalance: 0,
+        ethBalance: 0,
         tokenBalance: 0,
         amount: 0,
         address: '',
         ethWallet: '',
-        btcAddress: '',
+        withdrawAddress: '',
         txid: '',
         msg: ''
     };
@@ -18,10 +21,10 @@ class HomeComponent extends React.Component {
         super(props);
         this.generateWallet = this.generateWallet.bind(this);
         this.inputHandler = this.inputHandler.bind(this);
-        this.btcBalance = this.btcBalance.bind(this);
+        this.currencyBalance = this.currencyBalance.bind(this);
         this.tokenBalance = this.tokenBalance.bind(this);
         this.contributeSubmitHandler = this.contributeSubmitHandler.bind(this);
-        this.withdrawBtcSubmitHandler = this.withdrawBtcSubmitHandler.bind(this);
+        this.withdrawSubmitHandler = this.withdrawSubmitHandler.bind(this);
     }
 
     componentDidMount() {
@@ -44,8 +47,11 @@ class HomeComponent extends React.Component {
         }
     }
 
-    generateWallet() {
-        fetch('/tokensale/generate-wallet/btc/' + this.state.userid)
+    generateWallet(currency) {
+        fetch('/tokensale/generate-wallet/' + currency, {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -53,20 +59,38 @@ class HomeComponent extends React.Component {
             });
     }
 
-    btcBalance() {
-        fetch('/tokensale/balance/btc/' + this.state.userid)
+    getWallet(currency) {
+        fetch('/tokensale/get-wallet/' + currency, {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
+            .then(res => res.json())
+            .then(res => {
+                console.log(res);
+                if (!res.error) this.setState({ address: res.address });
+            });
+    }
+
+    currencyBalance(currency) {
+        fetch('/tokensale/balance/' + currency, {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
                 if (!res.error) {
-                    this.setState({ btcBalance: res.balance });
+                    this.setState({ [currency+'Balance'] : res.balance });
                 }
             }
-            );
+        );
     }
 
     tokenBalance() {
-        fetch('/tokensale/balance/token/' + this.state.ethWallet)
+        fetch('/tokensale/tokenbalance/' + this.state.ethWallet, {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
             .then(res => res.json())
             .then(res => {
                 console.log(res);
@@ -87,10 +111,7 @@ class HomeComponent extends React.Component {
         this.setState({ msg: "Transaction processing..." });
         fetch('/tokensale/contribute/btc', {
             method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: Auth.headers(Auth.token),
             body: JSON.stringify(this.state) //Important! Stringify the payload!
         }).then(res => res.json())
             .then(res => {
@@ -106,15 +127,12 @@ class HomeComponent extends React.Component {
             });
     }
 
-    withdrawBtcSubmitHandler(e) {
+    withdrawSubmitHandler(e, currency) {
         e.preventDefault(); //Control the form behavior
         this.setState({ msg: "Transaction processing..." });
-        fetch('/tokensale/withdraw/btc', {
+        fetch('/tokensale/withdraw/' + currency, {
             method: 'post',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: Auth.headers(Auth.token),
             body: JSON.stringify(this.state) //Stringify the payload
         }).then(res => res.json())
             .then(res => {
@@ -124,7 +142,7 @@ class HomeComponent extends React.Component {
                 if (res.error) {
                     console.log(res.error);
                 } else {
-                    this.btcBalance();
+                    this.currencyBalance(currency);
                     this.setState({ txid: res.txid });
                 }
             });
@@ -133,9 +151,18 @@ class HomeComponent extends React.Component {
     render() {
         return (
             <div className="HomeComponent">
+                <Navigation/>
                 <p>Wallet: {this.state.wallet}</p>
                 <button onClick={this.test}>test</button> <br />
-                <button onClick={this.generateWallet}>generate btc wallet</button><br />
+                <button onClick={() => {
+                    this.generateWallet('btc');
+                }} >generate btc wallet</button><br />
+                <button onClick={() => {
+                    this.generateWallet('eth');
+                }} >generate eth wallet</button><br />
+                <button onClick={() => {
+                    this.getWallet('eth');
+                }} >get eth wallet</button><br />
                 Send to this address: <span>{this.state.address}</span>
                 <form onSubmit={this.contributeSubmitHandler}>
                     User ID: <input
@@ -145,6 +172,7 @@ class HomeComponent extends React.Component {
                     Amount: <input
                     type='number'
                     name='amount'
+                    step = '.00001'
                     onChange={this.inputHandler} /> <br />
                     Eth Wallet: <input
                     type='text'
@@ -153,17 +181,31 @@ class HomeComponent extends React.Component {
                     <input type="submit" value="contribute" />
                 </form> <br />
 
-                <form onSubmit={this.withdrawBtcSubmitHandler}>
-                    Btc Wallet: <input
+                <form onSubmit={ (e)=> {
+                    this.withdrawSubmitHandler(e, 'btc');
+                }}>
+                    withdraw address: <input
                     type='text'
-                    name='btcAddress'
+                    name='withdrawAddress'
                     onChange={this.inputHandler} /> <br />
                     <input type="submit" value="withdraw btc" />
                 </form> <br />
+                <form onSubmit={ (e)=> {
+                    this.withdrawSubmitHandler(e, 'eth');
+                }}>
+                    
+                    <input type="submit" value="withdraw eth" />
+                </form> <br />
 
                 BTC Balance: <span>{this.state.btcBalance}</span> <br />
+                ETH Balance: <span>{this.state.ethBalance}</span> <br />
                 Token Balance: <span>{this.state.tokenBalance}</span> <br />
-                <button onClick={this.btcBalance}>check btc balance</button>
+                <button onClick={()=> {
+                    this.currencyBalance('btc');
+                }}>check btc balance</button>
+                <button onClick={()=> {
+                    this.currencyBalance('eth');
+                }}>check eth balance</button>
                 <button onClick={this.tokenBalance}>check token balance</button><br />
                 <span>Status: {this.state.msg}</span> <br />
                 <span>Txid: {this.state.txid} </span>

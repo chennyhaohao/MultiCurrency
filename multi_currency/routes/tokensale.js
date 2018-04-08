@@ -2,11 +2,11 @@ var express = require('express');
 var router = express.Router();
 var btcController = require('../controller/BitcoinController.js');
 var controller = require('../controller/MasterController.js');
-var Middlewares = require('./middlewares.js');
+var Auth = require('./Authentication.js');
 var Promise = require('bluebird');
 
 
-router.get('/', function(req, res, next) {
+router.get('/', Auth.ensureAuthorized, function(req, res, next) {
 	var result = controller.checkBalance('1', 'btc');
 	console.log(result);
   	res.json(result);
@@ -53,10 +53,11 @@ router.get('/test', async function(req, res, next) {
   	res.json(resultSend);
 });
 
-router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
+router.get('/generate-wallet/:currency', Auth.ensureAuthorized,
 	 async function(req, res, next) {
-		var userid = req.params.userid;
-		var result = await controller.generateWallet(userid, 'btc');
+		//var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.generateWallet(req.user, 
+			req.params.currency);
 		//console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
@@ -65,10 +66,24 @@ router.get('/generate-wallet/btc/:userid', Middlewares.checkAuthMiddleware,
 	}
 );
 
-router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
+router.get('/get-wallet/:currency', Auth.ensureAuthorized,
+	 async function(req, res, next) {
+		//var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.getWallet(req.user, 
+			req.params.currency);
+		//console.log(result);
+		if (result.error) {
+			result.error = result.error.message; //res.json() cannot retain methods
+		}
+	  	res.json(result);
+	}
+);
+
+router.get('/balance/:currency', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.params.userid;
-		var result = await controller.balanceOf(userid, 'btc');
+		//var userid = req.user.id.toString(); //get user id from request auth token
+		var result = await controller.balanceOf(req.user, 
+			req.params.currency);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
 		}
@@ -76,7 +91,7 @@ router.get('/balance/btc/:userid', 	Middlewares.checkAuthMiddleware,
 	}
 );
 
-router.get('/balance/token/:address', 	Middlewares.checkAuthMiddleware,
+router.get('/tokenbalance/:address', Auth.ensureAuthorized,
 	async function(req, res, next) {
 		var address = req.params.address;
 		var result = await controller.tokenBalance(address);
@@ -88,13 +103,13 @@ router.get('/balance/token/:address', 	Middlewares.checkAuthMiddleware,
 );
 
 router.post('/contribute/btc/', 
-	Middlewares.checkAuthMiddleware,
+	Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.body.userid;
+		var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
 		var toWallet = req.body.ethWallet;
-		console.log(userid);
-		var result = await controller.testBuyToken(userid, parseFloat(amount),
+		console.log("id: ", userid);
+		var result = await controller.testBuyToken(req.user, parseFloat(amount),
 			toWallet, "btc");
 		console.log(result);
 		if (result.error) {
@@ -104,13 +119,13 @@ router.post('/contribute/btc/',
 	}
 );
 
-router.post('/withdraw/btc/', Middlewares.checkAuthMiddleware,
+router.post('/withdraw/:currency', Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.body.userid;
+		//var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
-		var toAddress = req.body.btcAddress;
-		var result = await controller.withdraw(userid, amount, toAddress, 
-			'btc');
+		var toAddress = req.body.withdrawAddress;
+		var result = await controller.withdraw(req.user, amount, toAddress, 
+			req.params.currency);
 		console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods
