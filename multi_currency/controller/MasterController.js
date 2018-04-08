@@ -118,6 +118,7 @@ class TokenSaleController { //Core operations
 		//If times out, update database and use manual resolution
 		//If token issue failed, send back currency
 		//TODO: gas problem
+		
 		var success = true;
 		var err = null;
 		var btc_txid, txid;
