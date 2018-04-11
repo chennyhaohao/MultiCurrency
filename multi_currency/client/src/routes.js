@@ -5,6 +5,7 @@ import Home from './components/Home/HomeComponent';
 import Login from './components/Login/LoginComponent';
 import Logout from './components/Login/LogoutComponent';
 import Register from './components/Register/RegisterComponent';
+import ActivateAccount from './components/Register/ActivateComponent';
 
 const Auth = {
     m_isAuthenticated: false,
@@ -89,6 +90,7 @@ const Routes = () => (
             <Route path="/login" component={Login} />
             <Route path="/logout" component={Logout} />
             <Route path="/register" component={Register} />
+            <Route path="/activate/:key" component={ActivateAccount} />
         </Switch>
     </BrowserRouter>
 );
