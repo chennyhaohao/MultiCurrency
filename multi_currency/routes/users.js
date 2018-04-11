@@ -58,7 +58,7 @@ router.post('/login', function (req, res, next) {
             return;
         } else {
             result = result[0];
-
+            console.log(result);
             if (result.activated === 0) {
                 res.json(returnState(false, null, { msg: "Before login you must activate account. Please check email." }));
                 return;
@@ -81,7 +81,7 @@ router.post('/register', function (req, res, next) {
         if (err) throw err;
         if (result[0].thisSameUsers === 0) {
             let password = Auth.sha256(req.body.password);
-            let key = Auth.sha256(new Date().toString()).replace('/', ' ');
+            let key = Auth.sha256(new Date().toString()).replace(/\//g, ' ');
             con.query("INSERT INTO users (username, email, password, token) VALUES (?, ?, ?, ?)", [req.body.username, req.body.email, password, key], function (err, result) {
                 if (err) throw err;
 
