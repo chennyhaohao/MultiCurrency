@@ -102,15 +102,14 @@ router.get('/tokenbalance/:address', Auth.ensureAuthorized,
 	}
 );
 
-router.post('/contribute/btc/', 
+router.post('/contribute/:currency', 
 	Auth.ensureAuthorized,
 	async function(req, res, next) {
-		var userid = req.user.id.toString(); //get user id from request auth token
+		//var userid = req.user.id.toString(); //get user id from request auth token
 		var amount = req.body.amount;
 		var toWallet = req.body.ethWallet;
-		console.log("id: ", userid);
-		var result = await controller.testBuyToken(req.user, parseFloat(amount),
-			toWallet, "btc");
+		var result = await controller.buyToken(req.user, parseFloat(amount),
+			toWallet, req.params.currency);
 		console.log(result);
 		if (result.error) {
 			result.error = result.error.message; //res.json() cannot retain methods

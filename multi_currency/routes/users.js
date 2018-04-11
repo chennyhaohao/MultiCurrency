@@ -58,7 +58,6 @@ router.post('/login', function (req, res, next) {
             return;
         } else {
             result = result[0];
-            console.log(result);
             if (result.activated === 0) {
                 res.json(returnState(false, null, { msg: "Before login you must activate account. Please check email." }));
                 return;

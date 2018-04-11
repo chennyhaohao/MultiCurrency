@@ -18,6 +18,16 @@ function selectController(currency) {
 	}
 }
 
+function xrate(currency) {
+	if (currency == 'btc') {
+		return 10;
+	} else if (currency == 'eth') {
+		return 5;
+	} else {
+		throw new Error("Invalid currency");
+	}
+}
+
 class TokenSaleController { //Core operations
 	
 
@@ -122,19 +132,19 @@ class TokenSaleController { //Core operations
 		var success = true;
 		var err = null;
 		var btc_txid, txid;
-		var xrate = 10;
-		var btcAmount = amount/xrate;
 		try {
 			//TODO: check user kyc token limit
-			var balance = await btcController.balanceOf(user);
-			if (balance < btcAmount) { //Check balance
+			var controller = selectController(currency);
+			var currency_amount = amount/xrate(currency);
+			var balance = await controller.balanceOf(user);
+			if (balance < currency_amount) { //Check balance
 				return {success: false, txid:'', error: new Error("Insufficient funds")};
 			}
 
 			await tokenController.reserve(toWallet, amount); 
 			try {
-				btc_txid = await btcController.safeSendToAccount(user, 'multisig', btcAmount,
-					0, 'btc');
+				btc_txid = await controller.sendToTeam(user, 
+					currency_amount );
 			} catch(e) { //If fails, cancel reservation
 				await tokenController.cancelRsvp(toWallet, amount);
 				return {success: false, txid: '', error: e};
@@ -148,6 +158,7 @@ class TokenSaleController { //Core operations
 			err = e;
 			txid = '';
 		}
+		return {success: success, txid: txid, error: err};
 	}
 
 	async testBuyToken(user, amount, toWallet, currency) {

@@ -16,6 +16,11 @@ var web3;
 var coinbase;
 //console.log("Balance: ", web3.eth.getBalance('0x96d9b127c3fce317fba175c6390c173d009ba580'));
 //console.log("Connected: ", web3.isConnected());
+/*
+var str = "blahblah/b/lahblah/";
+console.log(str.replace('/', ' '));
+console.log(str.replace(/\//g, ' '));
+*/
 
 function web3versionFix(abstract) {
 	//Fix truffle compatibility issue with web3 v1.0.0
