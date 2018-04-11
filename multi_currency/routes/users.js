@@ -38,6 +38,9 @@ const dbParams = {
 
 var con = mysql.createConnection(dbParams);
 */
+
+var clientHost = "localhost:3000";
+
 router.get('/', Auth.ensureAuthorized, function (req, res, next) {
 	//var result = controller.increment();
     res.json({ status: "done" });
@@ -78,7 +81,7 @@ router.post('/register', function (req, res, next) {
         if (err) throw err;
         if (result[0].thisSameUsers === 0) {
             let password = Auth.sha256(req.body.password);
-            let key = Auth.sha256(new Date().toString());
+            let key = Auth.sha256(new Date().toString()).replace('/', ' ');
             con.query("INSERT INTO users (username, email, password, token) VALUES (?, ?, ?, ?)", [req.body.username, req.body.email, password, key], function (err, result) {
                 if (err) throw err;
 
@@ -86,7 +89,7 @@ router.post('/register', function (req, res, next) {
                     from: 'polkom21@gmail.com',
                     to: req.body.email,
                     subject: 'Activate account',
-                    html: '<h1>Activate account</h1><p>Please click activation link on bottom.</p><a href="' + url.format({ protocol: req.protocol, host: req.get('host') }) + '/activate/' + key + '">Activate</a>'
+                    html: '<h1>Activate account</h1><p>Please click activation link on bottom.</p><a href="' + url.format({ protocol: req.protocol, host: clientHost }) + '/activate/' + key + '">Activate</a>'
                 }
 
                 transporter.sendMail(mailOptions, (err, info) => {
@@ -106,18 +109,18 @@ router.post('/register', function (req, res, next) {
 });
 
 router.post('/activate/', (req, res, next) => {
-    con.query("SELECT COUNT(*) AS userExist FROM users WHERE username=? AND email=? AND token=?", [req.body.username, req.body.email, req.body.token], (err, result) => {
+    var query = con.query("SELECT COUNT(*) AS userExist FROM users WHERE username=? AND email=? AND token=?", [req.body.username, req.body.email, req.body.token], (err, result) => {
         if (err) throw err;
-
         if (result[0].userExist === 1) {
             con.query("UPDATE users SET activated=1 WHERE token=?", [req.body.token], (err, result) => {
                 if (err) throw err;
 
                 res.json(returnState(true, "Account activated. Now try login."));
-            })
+            });
+        } else {
+            res.status(404).json(returnState(false, null, { msg: "Invalid url" }));
         }
     });
-    res.status(404);
 });
 
 router.post('/auth', Auth.ensureAuthorized, (req, res, next) => {
