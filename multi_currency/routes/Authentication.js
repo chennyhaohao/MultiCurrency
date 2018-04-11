@@ -38,7 +38,7 @@ const Auth = {
 	            	console.log("Decode err");
 	                return res.status(401).json({ status: "Token has expired" });
 	            } else {
-	                con.query("SELECT * FROM users WHERE id=?", [payload.sub], (err, user) => {
+	                con.query("SELECT * FROM users WHERE id=? AND activated=1", [payload.sub], (err, user) => {
 	                    if (err) {
 	                    	console.log("db err");
 	                        res.status(500).json({ status: err });
@@ -48,7 +48,6 @@ const Auth = {
 	                    }
 	                    else {
 	                        req.user = user[0];
-	                        console.log(req.user);
 	                        next();
 	                    }
 	                });
