@@ -49,14 +49,17 @@ var con = mysql.createConnection(dbParams);
 
 var clientHost = "localhost:3000";
 
-router.get('/', Auth.ensureAuthorized, function (req, res, next) {
-    var role = roleGranted(req, ['user', 'admin']);
-    if (role.status) {
-        res.json({ status: "done" });
-    } else {
-        res.status(400).json(role);
+router.get('/', Auth.ensureAuthorized, Auth.roleGranted(["user", "admin"]), 
+    function (req, res, next) {    
+        res.json({status: "done"});
     }
-});
+);
+
+router.get('/admin-test', Auth.ensureAuthorized, Auth.roleGranted(["admin"]), 
+    function (req, res, next) {
+        res.json({status: "done"});
+    }
+);
 
 router.post('/login', function (req, res, next) {
     let username = req.body.login;

@@ -4,6 +4,10 @@ var moment = require('moment');
 var mysql = require('mysql');
 var con = require('./db.js');
 
+function returnState(status = false, data = {}, error = null) {
+    return { status: status, data: data, error: error };
+}
+
 const Auth = {
 	sha256: (data) => {
 		return crypto.createHash("sha256").update(data).digest("base64");
@@ -55,6 +59,15 @@ const Auth = {
 	        });
 	    } else {
 	        res.status(403).json({ status: "Please log in" });
+	    }
+    },
+
+    roleGranted: (roles) => (req, res, next) => {
+		if (roles.includes(req.user.role)) {
+	        return next();
+	    } else {
+	        return res.status(400).json(returnState(false, null, 
+	        	{ msg: "You don't have permissions" }));
 	    }
     },
 

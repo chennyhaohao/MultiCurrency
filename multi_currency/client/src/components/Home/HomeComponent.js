@@ -38,13 +38,28 @@ class HomeComponent extends React.Component {
     }
 
     async test() {
+        /*
         try {
             var res = await fetch('/tokensale/test');
             var result = await res.json();
             console.log(result);
         } catch (e) {
             console.log(e);
-        }
+        }*/
+        fetch('/users/', {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
+            .then(res => res.json())
+            .then(res => console.log("Expect success: ", res))
+            .catch(e => console.log(e));
+        fetch('/users/admin-test', {
+            method: 'get',
+            headers: Auth.headers(Auth.token),
+        })
+            .then(res => res.json())
+            .then(res => console.log("Expect failure: ", res))
+            .catch(e => console.log(e));
     }
 
     generateWallet(currency) {
