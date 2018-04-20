@@ -6,10 +6,12 @@ import Login from './components/Login/LoginComponent';
 import Logout from './components/Login/LogoutComponent';
 import Register from './components/Register/RegisterComponent';
 import ActivateAccount from './components/Register/ActivateComponent';
+import Navigation from './components/Navigation/NavigationComponent';
 
 const Auth = {
     m_isAuthenticated: false,
     token: null,
+    user: {},
 
     headers(token = null) {
         return {
@@ -22,6 +24,7 @@ const Auth = {
     async isAuthenticated(cb = null) {
         if (!this.m_isAuthenticated) {
             this.token = localStorage.getItem('token');
+            this.user = JSON.parse(localStorage.getItem('userData'));
             if (this.token != null) {
                 await fetch('/users/auth', {
                     method: 'post',
@@ -49,8 +52,10 @@ const Auth = {
                 return;
             }
             this.token = res.data.token;
+            this.user = res.data.user;
             if (data.rememberMe) {
                 localStorage.setItem('token', this.token);
+                localStorage.setItem('userData', JSON.stringify(this.user));
             }
             this.m_isAuthenticated = true;
             cb();
@@ -65,28 +70,48 @@ const Auth = {
     }
 };
 
-const PrivateRoute = ({ component: Component, ...rest }) => (
-    <Route
-        {...rest}
-        render={props =>
-            Auth.m_isAuthenticated ? (
-                <Component {...props} />
-            ) : (
-                <Redirect
-                    to={{
-                        pathname: "/login",
-                        state: { from: props.location }
-                    }}
-                />
-            )
+const Authorization = (allowedRoles) => (WrappedComponent) => {
+    return class WithAuthorization extends React.Component {
+        constructor(props) {
+            super(props)
+
+            this.state = {
+                isAuth: Auth.m_isAuthenticated,
+                user: {
+                    username: Auth.user.username,
+                    role: Auth.user.role
+                }
+            }
         }
-    />
-);
+
+        render() {
+            const { role } = this.state.user;
+            const { isAuth } = this.state;
+
+            console.log(isAuth);
+
+            if (!isAuth) {
+                return <Redirect to={{ pathname: '/login', state: { from: this.props.location } }} />
+            }
+
+            if (allowedRoles.includes(role)) {
+                return <WrappedComponent {...this.props} />
+            } else {
+                return (
+                    <div>
+                        <Navigation />
+                        <h1>No page for you!</h1>
+                    </div>
+                )
+            }
+        }
+    }
+}
 
 const Routes = () => (
     <BrowserRouter>
         <Switch>
-            <PrivateRoute exact path="/" component={Home} />
+            <Route path="/" exact component={Authorization(['user', 'admin'])(Home)} />
             <Route path="/login" component={Login} />
             <Route path="/logout" component={Logout} />
             <Route path="/register" component={Register} />
@@ -95,4 +120,4 @@ const Routes = () => (
     </BrowserRouter>
 );
 
-export { Routes, Auth };
+export { Routes, Auth, Authorization };
