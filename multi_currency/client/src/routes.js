@@ -108,10 +108,12 @@ const Authorization = (allowedRoles) => (WrappedComponent) => {
     }
 }
 
+const User = Authorization(['admin', 'user']);
+
 const Routes = () => (
     <BrowserRouter>
         <Switch>
-            <Route path="/" exact component={Authorization(['user', 'admin'])(Home)} />
+            <Route path="/" exact component={User(Home)} />
             <Route path="/login" component={Login} />
             <Route path="/logout" component={Logout} />
             <Route path="/register" component={Register} />
