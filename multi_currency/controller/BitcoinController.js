@@ -184,6 +184,15 @@ class BitcoinController {
 
 	}
 
+	async sendToTeam(user, btcAmount) {
+		try {
+			return (await this.safeSendToAccount(user, 'multisig', btcAmount,
+					0, 'btc'));
+		} catch(e) {
+			throw new Error(e);
+		}
+	}
+
 
 	async move(from, to, amount, unit) {
 		var success;

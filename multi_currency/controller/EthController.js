@@ -8,6 +8,10 @@ var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 class EthController {
 
+	constructor() {
+		this.multisig = "0x4FA9B933f1Ecaa4986191e570712BED7F1D46077";
+	}
+
 	get name() {
 		return "ETH";
 	}
@@ -103,7 +107,14 @@ class EthController {
         }
 	}
 
-
+	async sendToTeam(user, amount) {
+		try {
+			return (await this.safeSend(user, this.multisig, amount, 
+				0, "eth"));
+		} catch(e) {
+			throw new Error(e);
+		}
+	}
 }
 
 var controller = new EthController();

@@ -106,10 +106,10 @@ class HomeComponent extends React.Component {
         this.setState({ [target.name]: value });
     }
 
-    contributeSubmitHandler(e) {
+    contributeSubmitHandler(e, currency) {
         e.preventDefault(); //Important! Control the form behavior!
         this.setState({ msg: "Transaction processing..." });
-        fetch('/tokensale/contribute/btc', {
+        fetch('/tokensale/contribute/' + currency, {
             method: 'post',
             headers: Auth.headers(Auth.token),
             body: JSON.stringify(this.state) //Important! Stringify the payload!
@@ -121,8 +121,8 @@ class HomeComponent extends React.Component {
                 if (res.error) {
                     console.log(res.error);
                 } else {
-                    this.btcBalance();
-                    this.tokenBalance();
+                    this.currencyBalance(currency);
+                    this.setState({ txid: res.txid });
                 }
             });
     }
@@ -164,7 +164,10 @@ class HomeComponent extends React.Component {
                     this.getWallet('eth');
                 }} >get eth wallet</button><br />
                 Send to this address: <span>{this.state.address}</span>
-                <form onSubmit={this.contributeSubmitHandler}>
+
+                <form onSubmit={ (e)=> {
+                    return this.contributeSubmitHandler(e, 'btc');
+                }}>
                     User ID: <input
                     type='text'
                     name='userid'
@@ -178,11 +181,17 @@ class HomeComponent extends React.Component {
                     type='text'
                     name='ethWallet'
                     onChange={this.inputHandler} /> <br />
-                    <input type="submit" value="contribute" />
+                    <input type="submit" value="contribute with btc" />
                 </form> <br />
 
-                <form onSubmit={ (e)=> {
-                    this.withdrawSubmitHandler(e, 'btc');
+                 <form onSubmit={ (e)=> {
+                    return this.contributeSubmitHandler(e, 'eth');
+                }}>
+                <input type="submit" value="contribute with eth" />
+                </form> <br />
+
+                <form onSubmit={ (e) => {
+                    return this.withdrawSubmitHandler(e, 'btc');
                 }}>
                     withdraw address: <input
                     type='text'
@@ -190,7 +199,7 @@ class HomeComponent extends React.Component {
                     onChange={this.inputHandler} /> <br />
                     <input type="submit" value="withdraw btc" />
                 </form> <br />
-                <form onSubmit={ (e)=> {
+                <form onSubmit={ (e) => {
                     this.withdrawSubmitHandler(e, 'eth');
                 }}>
                     
