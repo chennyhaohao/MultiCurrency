@@ -28,6 +28,14 @@ const transporter = Mailer.createTransport({
 function returnState(status = false, data = {}, error = null) {
     return { status: status, data: data, error: error };
 }
+
+function roleGranted(req, roles) {
+    if (roles.includes(req.user.role)) {
+        return returnState(true);
+    } else {
+        return returnState(false, null, { msg: "You don't have permissions" });
+    }
+}
 /*
 const dbParams = {
     host: 's69.hekko.pl',
@@ -42,8 +50,12 @@ var con = mysql.createConnection(dbParams);
 var clientHost = "localhost:3000";
 
 router.get('/', Auth.ensureAuthorized, function (req, res, next) {
-	//var result = controller.increment();
-    res.json({ status: "done" });
+    var role = roleGranted(req, ['user', 'admin']);
+    if (role.status) {
+        res.json({ status: "done" });
+    } else {
+        res.status(400).json(role);
+    }
 });
 
 router.post('/login', function (req, res, next) {
@@ -65,7 +77,7 @@ router.post('/login', function (req, res, next) {
                 const token = Auth.encodeToken(result);
 
                 if (password === result.password) {
-                    res.json(returnState(true, { token: token }));
+                    res.json(returnState(true, { token: token, user: result }));
                 } else {
                     res.json(returnState(false, null, { msg: "Wrong username or password!" }));
                 }

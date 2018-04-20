@@ -25,9 +25,9 @@ const Auth = {
 	        sub: user.id
 	    }
 	    return jwt.sign(payload, process.env.JWT_SECRET);
-	},
+    },
 
-	ensureAuthorized: (req, res, next) => {
+    ensureAuthorized: (req, res, next) => {
 	    var bearerToken;
 	    var bearerHeader = req.headers["authorization"];
 	    if (typeof bearerHeader !== 'undefined') {
@@ -56,7 +56,7 @@ const Auth = {
 	    } else {
 	        res.status(403).json({ status: "Please log in" });
 	    }
-	},
+    },
 
 };
 
