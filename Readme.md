@@ -10,18 +10,6 @@ Due to the high transaction time of the blockchain, the processing can take up t
 
 If the user doesn't want to purchase any more tokens but still has left-over balance in their BTC account, they can choose to withdraw the BTC to their own wallet. The user will have to specify their own wallet address to which the BTC will be sent, and also the amount of BTC to withdraw. If the user confirms the withdrawal, the backend will then send the BTC to the address specified by the user.  
 
-## What's already done
-The core backend controller handling BTC contributions (in the `/controller` directory); a basic router setup (implemented with the `express` framework); an extremely barebone frontend interface for basic testing (in the `/client` directory, implemented with the `react` framework).  
-
-## What needs to be done
-
-A sign-up and login system; a frontend; potentially integration of a KYC system  
-  
-No need to extensively style the frontend, as we likely have to style the frontend differently depending on each client. We just need the basic layout for now.  
-
-In the database: apart from basic user information (userid, username, e-mail, password hash, salt, etc.) we likely also need to store an encrypted Ethereum private key for each user.  
-
-
 ## Installation
 To install the project, first clone this repository:  
 ```
